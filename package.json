@@ -20,6 +20,7 @@
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx test/smoke.ts",
+    "test:unit": "vitest run",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -57,7 +58,8 @@
     "@types/ws": "^8.18.1",
     "tsup": "^8.0.0",
     "tsx": "^4.0.0",
-    "typescript": "^5.5.0"
+    "typescript": "^5.5.0",
+    "vitest": "^4.0.18"
   },
   "dependencies": {
     "ws": "^8.0.0"
