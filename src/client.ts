@@ -4,7 +4,7 @@ import type {
   Ticker, EodParams, EodDataPoint, IntradayParams, IntradayDataPoint,
   RealTimeQuote, RealTimeParams, UsQuoteDelayedParams, BulkEodParams,
   DividendDataPoint, SplitDataPoint, HistoricalMarketCapPoint, TicksParams,
-  FundamentalsParams, BulkFundamentalsParams, BondsParams,
+  FundamentalsParams, BulkFundamentalsParams,
   CalendarEarningsParams, CalendarTrendsParams, CalendarIposParams,
   CalendarSplitsParams, CalendarDividendsParams,
   NewsParams, NewsArticle, SentimentsParams, NewsWordWeightsParams,
@@ -174,11 +174,6 @@ export class EODHDClient {
     return this._fundamentals.bulkFundamentals(exchange, params);
   }
 
-  /** US corporate bonds */
-  bonds(params?: BondsParams): Promise<unknown> {
-    return this._fundamentals.bonds(params);
-  }
-
   // ── News & Sentiment ──
 
   /** Financial news */
@@ -246,12 +241,12 @@ export class EODHDClient {
 
   /** Company logo (PNG) */
   logo(symbol: Ticker): Promise<ArrayBuffer> {
-    return this._user.logo(symbol);
+    return this._fundamentals.logo(symbol);
   }
 
   /** Company logo (SVG) */
   logoSvg(symbol: Ticker): Promise<ArrayBuffer> {
-    return this._user.logoSvg(symbol);
+    return this._fundamentals.logoSvg(symbol);
   }
 
   // ── WebSocket ──

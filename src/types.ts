@@ -21,6 +21,7 @@ export interface Pagination {
 export interface EodParams extends DateRange {
   period?: 'd' | 'w' | 'm';
   order?: 'a' | 'd';
+  filter?: 'last_close' | 'last_volume' | string;
 }
 
 export interface EodDataPoint {
@@ -39,6 +40,7 @@ export interface IntradayParams {
   interval?: '1m' | '5m' | '1h';
   from?: number | string;
   to?: number | string;
+  'split-dt'?: 0 | 1;
 }
 
 export interface IntradayDataPoint {
@@ -146,6 +148,7 @@ export interface TechnicalParams extends DateRange {
   function: TechnicalFunction;
   period?: number;
   order?: 'a' | 'd';
+  filter?: string;
   agg_period?: 'd' | 'w' | 'm';
   fast_kperiod?: number;
   slow_kperiod?: number;
@@ -162,19 +165,13 @@ export interface TechnicalParams extends DateRange {
 
 // ── Fundamentals ──
 
-export interface FundamentalsParams {
+export interface FundamentalsParams extends DateRange {
   filter?: string;
+  historical?: 0 | 1;
 }
 
 export interface BulkFundamentalsParams {
   symbols?: string;
-}
-
-// ── Bonds ──
-
-export interface BondsParams {
-  isin?: string;
-  cusip?: string;
 }
 
 // ── Insider Transactions ──
@@ -189,7 +186,6 @@ export interface SearchParams {
   limit?: number;
   exchange?: string;
   type?: 'all' | 'stock' | 'etf' | 'fund' | 'bond' | 'index' | 'crypto';
-  bonds_only?: 0 | 1;
 }
 
 export interface SearchResult {
@@ -268,7 +264,9 @@ export interface CalendarTrendsParams {
 
 export interface CalendarIposParams extends DateRange {}
 
-export interface CalendarSplitsParams extends DateRange {}
+export interface CalendarSplitsParams extends DateRange {
+  symbols?: string;
+}
 
 export interface CalendarDividendsParams {
   'filter[symbol]'?: string;

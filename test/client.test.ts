@@ -226,15 +226,7 @@ describe('EODHDClient', () => {
       expect(url).toContain('symbols=AAPL%2CMSFT');
     });
 
-    it('bonds() calls /bonds', async () => {
-      const client = createClient();
-      await client.bonds({ cusip: '037833100' });
-
-      const url = getCalledUrl(fetch);
-      expect(url).toContain('/bonds');
-      expect(url).toContain('cusip=037833100');
-    });
-  });
+});
 
   // ── Delegation: News & Sentiment ────────────────────────────────────────
 

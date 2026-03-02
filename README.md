@@ -90,8 +90,11 @@ const financials = await client.fundamentals('AAPL.US', { filter: 'Financials' }
 // Bulk fundamentals for an exchange
 const bulkFund = await client.bulkFundamentals('US', { symbols: 'AAPL,MSFT,GOOG' });
 
-// US corporate bonds
-const bonds = await client.bonds({ isin: 'US0378331005' });
+// Company logo (PNG)
+const logoPng = await client.logo('AAPL.US'); // returns ArrayBuffer
+
+// Company logo (SVG)
+const logoSvg = await client.logoSvg('AAPL.US'); // returns ArrayBuffer
 ```
 
 ### Calendar Events
@@ -248,16 +251,6 @@ const insiders = await client.insiderTransactions({
   from: '2025-01-01',
   limit: 100,
 });
-```
-
-### Logos
-
-```typescript
-// Company logo (PNG)
-const logoPng = await client.logo('AAPL.US'); // returns ArrayBuffer
-
-// Company logo (SVG)
-const logoSvg = await client.logoSvg('AAPL.US'); // returns ArrayBuffer
 ```
 
 ### User Info

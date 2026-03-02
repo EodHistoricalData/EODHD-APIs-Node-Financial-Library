@@ -1,5 +1,5 @@
 import type { HttpClient } from '../http.js';
-import type { Ticker, FundamentalsParams, BulkFundamentalsParams, BondsParams } from '../types.js';
+import type { Ticker, FundamentalsParams, BulkFundamentalsParams } from '../types.js';
 
 export class FundamentalsApi {
   constructor(private http: HttpClient) {}
@@ -14,8 +14,13 @@ export class FundamentalsApi {
     return this.http.get(`/bulk-fundamentals/${exchange}`, params);
   }
 
-  /** US corporate bonds: GET /bonds */
-  async bonds(params: BondsParams = {}): Promise<unknown> {
-    return this.http.get('/bonds', params);
+  /** Company logo (PNG): GET /logo/{symbol} */
+  async logo(symbol: Ticker): Promise<ArrayBuffer> {
+    return this.http.getBuffer(`/logo/${symbol}`);
+  }
+
+  /** Company logo (SVG): GET /logo-svg/{symbol} */
+  async logoSvg(symbol: Ticker): Promise<ArrayBuffer> {
+    return this.http.getBuffer(`/logo-svg/${symbol}`);
   }
 }
