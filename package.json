@@ -1,0 +1,73 @@
+{
+  "name": "eodhd",
+  "version": "0.1.0",
+  "description": "Official Node.js/TypeScript library for EODHD Financial Data APIs",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx test/smoke.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "eodhd",
+    "financial-data",
+    "stock-market",
+    "api",
+    "stocks",
+    "etf",
+    "forex",
+    "crypto",
+    "fundamentals",
+    "options",
+    "eod",
+    "historical-data",
+    "real-time",
+    "websocket",
+    "typescript"
+  ],
+  "author": "EODHD APIs <supportlevel1@eodhistoricaldata.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EodHistoricalData/EODHD-APIs-Node-Financial-Library.git"
+  },
+  "homepage": "https://eodhd.com",
+  "bugs": {
+    "url": "https://github.com/EodHistoricalData/EODHD-APIs-Node-Financial-Library/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.3",
+    "@types/ws": "^8.18.1",
+    "tsup": "^8.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.5.0"
+  },
+  "dependencies": {
+    "ws": "^8.0.0"
+  },
+  "peerDependencies": {
+    "ws": "^8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "ws": {
+      "optional": true
+    }
+  }
+}
