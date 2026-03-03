@@ -15,4 +15,5 @@ export type { RetryOptions } from './retry.js';
 export { DEFAULT_RETRY, calculateDelay } from './retry.js';
 export { paginate } from './pagination.js';
 export type { PaginatedResult, PageFetcher, PaginateOptions } from './pagination.js';
+export { deprecated } from './deprecation.js';
 export * from './types.js';
