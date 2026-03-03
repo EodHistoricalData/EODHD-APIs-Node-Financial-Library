@@ -5,6 +5,25 @@ type ErrorListener = (error: Error) => void;
 
 const WS_BASE_URL = 'wss://ws.eodhistoricaldata.com/ws';
 
+/**
+ * Real-time WebSocket client for streaming market data from EODHD.
+ *
+ * Supports US trades, US quotes, forex, and crypto feeds with automatic
+ * reconnection on connection loss.
+ *
+ * Typically created via {@link EODHDClient.websocket} rather than directly.
+ *
+ * @example
+ * ```ts
+ * const ws = client.websocket('us', ['AAPL', 'MSFT']);
+ * ws.on('data', (tick) => console.log(tick.s, tick.p, tick.v));
+ * ws.on('error', (err) => console.error(err));
+ * ws.on('close', () => console.log('disconnected'));
+ * // Later: ws.close();
+ * ```
+ *
+ * @see https://eodhd.com/financial-apis/live-realtime-stocks-api/
+ */
 export class EODHDWebSocket {
   private ws: WebSocket | null = null;
   private listeners: WebSocketListener[] = [];
@@ -13,6 +32,14 @@ export class EODHDWebSocket {
   private reconnectAttempts = 0;
   private closed = false;
 
+  /**
+   * Create a new WebSocket client instance.
+   *
+   * @param apiToken - EODHD API token for authentication
+   * @param feed - Feed type: `"us"`, `"us-quote"`, `"forex"`, or `"crypto"`
+   * @param symbols - Symbols to subscribe to on connect
+   * @param options - Reconnect settings (maxReconnectAttempts defaults to 5, reconnectInterval defaults to 3000ms)
+   */
   constructor(
     private apiToken: string,
     private feed: WebSocketFeed,
@@ -20,7 +47,18 @@ export class EODHDWebSocket {
     private options: WebSocketOptions = {},
   ) {}
 
-  /** Start the WebSocket connection */
+  /**
+   * Start the WebSocket connection and subscribe to configured symbols.
+   *
+   * Called automatically by {@link EODHDClient.websocket}. Returns `this` for chaining.
+   *
+   * @returns This instance for method chaining
+   *
+   * @example
+   * ```ts
+   * const ws = new EODHDWebSocket(token, 'us', ['AAPL']).connect();
+   * ```
+   */
   connect(): this {
     this.closed = false;
     const url = `${WS_BASE_URL}/${this.feed}?api_token=${this.apiToken}`;
@@ -28,7 +66,22 @@ export class EODHDWebSocket {
     return this;
   }
 
-  /** Subscribe to incoming ticks */
+  /**
+   * Register an event listener for data ticks, errors, or close events.
+   *
+   * @param event - Event name: `"data"`, `"error"`, or `"close"`
+   * @param listener - Callback function for the event
+   * @returns This instance for method chaining
+   *
+   * @example
+   * ```ts
+   * ws.on('data', (tick) => {
+   *   console.log(`${tick.s}: $${tick.p} x${tick.v}`);
+   * });
+   * ws.on('error', (err) => console.error('WS error:', err.message));
+   * ws.on('close', () => console.log('Connection closed'));
+   * ```
+   */
   on(event: 'data', listener: WebSocketListener): this;
   on(event: 'error', listener: ErrorListener): this;
   on(event: 'close', listener: () => void): this;
@@ -40,7 +93,14 @@ export class EODHDWebSocket {
     return this;
   }
 
-  /** Close the connection */
+  /**
+   * Close the WebSocket connection and stop auto-reconnect.
+   *
+   * @example
+   * ```ts
+   * ws.close();
+   * ```
+   */
   close(): void {
     this.closed = true;
     this.ws?.close();
