@@ -1,11 +1,11 @@
 import type { HttpClient } from '../http.js';
-import type { ScreenerParams, SearchParams, SearchResult, Ticker, IdMappingParams, TechnicalParams } from '../types.js';
+import type { ScreenerParams, ScreenerResponse, SearchParams, SearchResult, Ticker, IdMappingParams, IdMappingItem, TechnicalParams, TechnicalDataPoint } from '../types.js';
 
 export class ScreeningApi {
   constructor(private http: HttpClient) {}
 
   /** Stock market screener: GET /screener */
-  async screener(params: ScreenerParams = {}): Promise<unknown> {
+  async screener(params: ScreenerParams = {}): Promise<ScreenerResponse> {
     return this.http.get('/screener', params);
   }
 
@@ -15,12 +15,12 @@ export class ScreeningApi {
   }
 
   /** ID mapping (CUSIP/ISIN/FIGI/LEI/CIK): GET /id-mapping */
-  async idMapping(params: IdMappingParams = {}): Promise<unknown> {
+  async idMapping(params: IdMappingParams = {}): Promise<IdMappingItem[]> {
     return this.http.get('/id-mapping', params);
   }
 
   /** Technical indicators: GET /technical/{ticker} */
-  async technical(ticker: Ticker, params: TechnicalParams): Promise<unknown[]> {
+  async technical(ticker: Ticker, params: TechnicalParams): Promise<TechnicalDataPoint[]> {
     return this.http.get(`/technical/${ticker}`, params);
   }
 }

@@ -2,19 +2,26 @@ import { HttpClient } from './http.js';
 import { EODHDWebSocket } from './websocket.js';
 import type {
   Ticker, EodParams, EodDataPoint, IntradayParams, IntradayDataPoint,
-  RealTimeQuote, RealTimeParams, UsQuoteDelayedParams, BulkEodParams,
-  DividendDataPoint, SplitDataPoint, HistoricalMarketCapPoint, TicksParams,
-  FundamentalsParams, BulkFundamentalsParams,
+  RealTimeQuote, RealTimeParams, UsQuoteDelayedParams, UsQuoteDelayedResult,
+  BulkEodParams, BulkEodDataPoint,
+  DividendDataPoint, SplitDataPoint, HistoricalMarketCapPoint,
+  TicksParams, TickDataPoint,
+  FundamentalsParams, FundamentalsData,
+  BulkFundamentalsParams, BulkFundamentalsItem,
   CalendarEarningsParams, CalendarTrendsParams, CalendarIposParams,
   CalendarSplitsParams, CalendarDividendsParams,
-  NewsParams, NewsArticle, SentimentsParams, NewsWordWeightsParams,
+  NewsParams, NewsArticle, SentimentsParams, SentimentItem,
+  NewsWordWeightsParams, NewsWordWeight,
   ExchangeSymbolsParams, ExchangeDetailsParams, Exchange,
-  MacroIndicatorParams, EconomicEventsParams,
+  MacroIndicatorParams, MacroIndicatorItem,
+  EconomicEventsParams, EconomicEventsResponse,
   TreasuryParams, CboeIndexParams,
-  ScreenerParams, SearchParams, SearchResult, IdMappingParams,
-  TechnicalParams,
-  InsiderTransactionsParams,
+  ScreenerParams, ScreenerResponse, SearchParams, SearchResult,
+  IdMappingParams, IdMappingItem,
+  TechnicalParams, TechnicalDataPoint,
+  InsiderTransactionsParams, InsiderTransactionItem,
   DateRange,
+  UserData,
   WebSocketFeed, WebSocketOptions,
 } from './types.js';
 
@@ -133,12 +140,12 @@ export class EODHDClient {
   }
 
   /** US extended delayed quotes */
-  usQuoteDelayed(params?: UsQuoteDelayedParams): Promise<unknown[]> {
+  usQuoteDelayed(params?: UsQuoteDelayedParams): Promise<UsQuoteDelayedResult[]> {
     return this._eod.usQuoteDelayed(params);
   }
 
   /** Bulk EOD data for exchange */
-  bulkEod(exchange: string, params?: BulkEodParams): Promise<unknown[]> {
+  bulkEod(exchange: string, params?: BulkEodParams): Promise<BulkEodDataPoint[]> {
     return this._eod.bulkEod(exchange, params);
   }
 
@@ -158,19 +165,19 @@ export class EODHDClient {
   }
 
   /** US stock market tick data */
-  ticks(params?: TicksParams): Promise<unknown[]> {
+  ticks(params?: TicksParams): Promise<TickDataPoint[]> {
     return this._eod.ticks(params);
   }
 
   // ── Fundamentals ──
 
   /** Company fundamentals */
-  fundamentals(ticker: Ticker, params?: FundamentalsParams): Promise<unknown> {
+  fundamentals(ticker: Ticker, params?: FundamentalsParams): Promise<FundamentalsData> {
     return this._fundamentals.fundamentals(ticker, params);
   }
 
   /** Bulk fundamentals for exchange */
-  bulkFundamentals(exchange: string, params?: BulkFundamentalsParams): Promise<unknown> {
+  bulkFundamentals(exchange: string, params?: BulkFundamentalsParams): Promise<BulkFundamentalsItem[]> {
     return this._fundamentals.bulkFundamentals(exchange, params);
   }
 
@@ -182,19 +189,19 @@ export class EODHDClient {
   }
 
   /** Sentiment data */
-  sentiments(params?: SentimentsParams): Promise<unknown> {
+  sentiments(params?: SentimentsParams): Promise<Record<string, SentimentItem[]>> {
     return this._news.sentiments(params);
   }
 
   /** News word weights */
-  newsWordWeights(params?: NewsWordWeightsParams): Promise<unknown> {
+  newsWordWeights(params?: NewsWordWeightsParams): Promise<NewsWordWeight[]> {
     return this._news.newsWordWeights(params);
   }
 
   // ── Screening & Search ──
 
   /** Stock market screener */
-  screener(params?: ScreenerParams): Promise<unknown> {
+  screener(params?: ScreenerParams): Promise<ScreenerResponse> {
     return this._screening.screener(params);
   }
 
@@ -204,38 +211,38 @@ export class EODHDClient {
   }
 
   /** ID mapping (CUSIP/ISIN/FIGI/LEI/CIK) */
-  idMapping(params?: IdMappingParams): Promise<unknown> {
+  idMapping(params?: IdMappingParams): Promise<IdMappingItem[]> {
     return this._screening.idMapping(params);
   }
 
   /** Technical indicators */
-  technical(ticker: Ticker, params: TechnicalParams): Promise<unknown[]> {
+  technical(ticker: Ticker, params: TechnicalParams): Promise<TechnicalDataPoint[]> {
     return this._screening.technical(ticker, params);
   }
 
   // ── Corporate Actions ──
 
   /** Insider transactions (SEC Form 4) */
-  insiderTransactions(params?: InsiderTransactionsParams): Promise<unknown[]> {
+  insiderTransactions(params?: InsiderTransactionsParams): Promise<InsiderTransactionItem[]> {
     return this._corporate.insiderTransactions(params);
   }
 
   // ── Macro & Economic ──
 
   /** Macro indicators by country */
-  macroIndicator(country: string, params?: MacroIndicatorParams): Promise<unknown[]> {
+  macroIndicator(country: string, params?: MacroIndicatorParams): Promise<MacroIndicatorItem[]> {
     return this._macro.macroIndicator(country, params);
   }
 
   /** Economic events calendar */
-  economicEvents(params?: EconomicEventsParams): Promise<unknown> {
+  economicEvents(params?: EconomicEventsParams): Promise<EconomicEventsResponse> {
     return this._macro.economicEvents(params);
   }
 
   // ── User ──
 
   /** User account info */
-  user(): Promise<unknown> {
+  user(): Promise<UserData> {
     return this._user.user();
   }
 

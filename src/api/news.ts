@@ -1,5 +1,5 @@
 import type { HttpClient } from '../http.js';
-import type { NewsParams, NewsArticle, SentimentsParams, NewsWordWeightsParams } from '../types.js';
+import type { NewsParams, NewsArticle, SentimentsParams, SentimentItem, NewsWordWeightsParams, NewsWordWeight } from '../types.js';
 
 export class NewsApi {
   constructor(private http: HttpClient) {}
@@ -10,12 +10,12 @@ export class NewsApi {
   }
 
   /** Sentiment data: GET /sentiments */
-  async sentiments(params: SentimentsParams = {}): Promise<unknown> {
+  async sentiments(params: SentimentsParams = {}): Promise<Record<string, SentimentItem[]>> {
     return this.http.get('/sentiments', params);
   }
 
   /** News word weights: GET /news-word-weights */
-  async newsWordWeights(params: NewsWordWeightsParams = {}): Promise<unknown> {
+  async newsWordWeights(params: NewsWordWeightsParams = {}): Promise<NewsWordWeight[]> {
     return this.http.get('/news-word-weights', params);
   }
 }

@@ -1,16 +1,16 @@
 import type { HttpClient } from '../http.js';
-import type { Ticker, FundamentalsParams, BulkFundamentalsParams } from '../types.js';
+import type { Ticker, FundamentalsParams, FundamentalsData, BulkFundamentalsParams, BulkFundamentalsItem } from '../types.js';
 
 export class FundamentalsApi {
   constructor(private http: HttpClient) {}
 
   /** Company fundamentals: GET /fundamentals/{ticker} */
-  async fundamentals(ticker: Ticker, params: FundamentalsParams = {}): Promise<unknown> {
+  async fundamentals(ticker: Ticker, params: FundamentalsParams = {}): Promise<FundamentalsData> {
     return this.http.get(`/fundamentals/${ticker}`, params);
   }
 
   /** Bulk fundamentals for exchange: GET /bulk-fundamentals/{exchange} */
-  async bulkFundamentals(exchange: string, params: BulkFundamentalsParams = {}): Promise<unknown> {
+  async bulkFundamentals(exchange: string, params: BulkFundamentalsParams = {}): Promise<BulkFundamentalsItem[]> {
     return this.http.get(`/bulk-fundamentals/${exchange}`, params);
   }
 

@@ -82,6 +82,22 @@ export interface UsQuoteDelayedParams {
   'page[offset]'?: number;
 }
 
+export interface UsQuoteDelayedResult {
+  code: string;
+  name: string;
+  exchange: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+  timestamp: number;
+  previousClose: number;
+  change: number;
+  change_p: number;
+  [key: string]: unknown;
+}
+
 // ── Bulk EOD ──
 
 export interface BulkEodParams {
@@ -89,6 +105,19 @@ export interface BulkEodParams {
   type?: 'eod' | 'splits' | 'dividends';
   symbols?: string;
   filter?: string;
+}
+
+export interface BulkEodDataPoint {
+  code: string;
+  exchange_short_name: string;
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  adjusted_close: number;
+  volume: number;
+  [key: string]: unknown;
 }
 
 // ── Dividends ──
@@ -127,6 +156,14 @@ export interface TicksParams {
   limit?: number;
 }
 
+export interface TickDataPoint {
+  timestamp: number;
+  datetime: string;
+  price: number;
+  volume: number;
+  [key: string]: unknown;
+}
+
 // ── Screener ──
 
 export interface ScreenerParams {
@@ -135,6 +172,27 @@ export interface ScreenerParams {
   sort?: string;
   limit?: number;
   offset?: number;
+}
+
+export interface ScreenerItem {
+  code: string;
+  name: string;
+  exchange: string;
+  sector: string;
+  industry: string;
+  market_capitalization: number;
+  [key: string]: unknown;
+}
+
+export interface ScreenerResponse {
+  data: ScreenerItem[];
+  meta: {
+    total: number;
+    limit: number;
+    offset: number;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
 }
 
 // ── Technical ──
@@ -163,6 +221,11 @@ export interface TechnicalParams extends DateRange {
   splitadjusted_only?: 0 | 1;
 }
 
+export interface TechnicalDataPoint {
+  date: string;
+  [key: string]: unknown;
+}
+
 // ── Fundamentals ──
 
 export interface FundamentalsParams extends DateRange {
@@ -174,10 +237,44 @@ export interface BulkFundamentalsParams {
   symbols?: string;
 }
 
+export interface FundamentalsData {
+  General?: Record<string, unknown>;
+  Highlights?: Record<string, unknown>;
+  Valuation?: Record<string, unknown>;
+  SharesStats?: Record<string, unknown>;
+  Technicals?: Record<string, unknown>;
+  SplitsDividends?: Record<string, unknown>;
+  AnalystRatings?: Record<string, unknown>;
+  Holders?: Record<string, unknown>;
+  InsiderTransactions?: Record<string, unknown>;
+  ESGScores?: Record<string, unknown>;
+  outstandingShares?: Record<string, unknown>;
+  Earnings?: Record<string, unknown>;
+  Financials?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+export interface BulkFundamentalsItem {
+  General: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 // ── Insider Transactions ──
 
 export interface InsiderTransactionsParams extends DateRange, Pagination {
   code?: string;
+}
+
+export interface InsiderTransactionItem {
+  code: string;
+  date: string;
+  ownerName: string;
+  ownerTitle: string;
+  transactionType: string;
+  transactionAmount: number;
+  transactionPrice: number;
+  transactionShares: number;
+  [key: string]: unknown;
 }
 
 // ── Search ──
@@ -213,6 +310,20 @@ export interface IdMappingParams {
   'page[offset]'?: number;
 }
 
+export interface IdMappingItem {
+  Code: string;
+  Exchange: string;
+  Name: string;
+  Country: string;
+  Currency: string;
+  ISIN: string;
+  CUSIP?: string;
+  FIGI?: string;
+  LEI?: string;
+  CIK?: string;
+  [key: string]: unknown;
+}
+
 // ── News ──
 
 export interface NewsParams extends Pagination {
@@ -243,6 +354,13 @@ export interface SentimentsParams extends DateRange {
   s?: string;
 }
 
+export interface SentimentItem {
+  date: string;
+  count: number;
+  normalized: number;
+  [key: string]: unknown;
+}
+
 // ── News Word Weights ──
 
 export interface NewsWordWeightsParams {
@@ -250,6 +368,12 @@ export interface NewsWordWeightsParams {
   'filter[date_from]'?: DateString;
   'filter[date_to]'?: DateString;
   'page[limit]'?: number;
+}
+
+export interface NewsWordWeight {
+  word: string;
+  weight: number;
+  [key: string]: unknown;
 }
 
 // ── Calendar ──
@@ -277,6 +401,110 @@ export interface CalendarDividendsParams {
   'page[offset]'?: number;
 }
 
+export interface CalendarEarningsItem {
+  code: string;
+  report_date: string;
+  date: string;
+  before_after_market?: string;
+  currency?: string;
+  actual?: number | null;
+  estimate?: number | null;
+  difference?: number | null;
+  percent?: number | null;
+  [key: string]: unknown;
+}
+
+export interface CalendarEarningsResponse {
+  type: string;
+  description: string;
+  symbols_count: number;
+  earnings: CalendarEarningsItem[];
+  [key: string]: unknown;
+}
+
+export interface CalendarTrendsItem {
+  code: string;
+  date: string;
+  period: string;
+  growth?: string;
+  earningsEstimateAvg?: number | null;
+  earningsEstimateHigh?: number | null;
+  earningsEstimateLow?: number | null;
+  revenueEstimateAvg?: number | null;
+  [key: string]: unknown;
+}
+
+export interface CalendarTrendsResponse {
+  type: string;
+  description: string;
+  trends: Record<string, CalendarTrendsItem[]>;
+  [key: string]: unknown;
+}
+
+export interface CalendarIpoItem {
+  code: string;
+  name: string;
+  exchange: string;
+  currency: string;
+  start_date: string;
+  filing_date: string;
+  amended_date?: string;
+  price_from?: number;
+  price_to?: number;
+  offer_price?: number;
+  shares?: number;
+  deal_type?: string;
+  [key: string]: unknown;
+}
+
+export interface CalendarIposResponse {
+  type: string;
+  description: string;
+  ipos: CalendarIpoItem[];
+  [key: string]: unknown;
+}
+
+export interface CalendarSplitItem {
+  code: string;
+  split: string;
+  date: string;
+  optionable?: string;
+  old_shares?: number;
+  new_shares?: number;
+  [key: string]: unknown;
+}
+
+export interface CalendarSplitsResponse {
+  type: string;
+  description: string;
+  splits: CalendarSplitItem[];
+  [key: string]: unknown;
+}
+
+export interface CalendarDividendItem {
+  code: string;
+  date: string;
+  declarationDate?: string;
+  recordDate?: string;
+  paymentDate?: string;
+  period?: string;
+  value?: number;
+  unadjustedValue?: number;
+  currency?: string;
+  [key: string]: unknown;
+}
+
+export interface CalendarDividendsData {
+  data: CalendarDividendItem[];
+  meta: {
+    total: number;
+    limit: number;
+    offset: number;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
 // ── Economic Events ──
 
 export interface EconomicEventsParams extends DateRange, Pagination {
@@ -285,10 +513,43 @@ export interface EconomicEventsParams extends DateRange, Pagination {
   type?: string;
 }
 
+export interface EconomicEventItem {
+  type: string;
+  comparison: string;
+  country: string;
+  date: string;
+  actual?: number | null;
+  previous?: number | null;
+  estimate?: number | null;
+  change?: number | null;
+  change_percentage?: number | null;
+  [key: string]: unknown;
+}
+
+export interface EconomicEventsResponse {
+  data: EconomicEventItem[];
+  meta: {
+    total: number;
+    limit: number;
+    offset: number;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
 // ── Macro Indicators ──
 
 export interface MacroIndicatorParams {
   indicator?: string;
+}
+
+export interface MacroIndicatorItem {
+  CountryCode: string;
+  Indicator: string;
+  Date: string;
+  Period: string;
+  Value: number;
+  [key: string]: unknown;
 }
 
 // ── Exchanges ──
@@ -308,9 +569,46 @@ export interface Exchange {
   CountryISO3: string;
 }
 
+export interface ExchangeSymbol {
+  Code: string;
+  Name: string;
+  Country: string;
+  Exchange: string;
+  Currency: string;
+  Type: string;
+  Isin?: string;
+  [key: string]: unknown;
+}
+
+export interface ExchangeDetails {
+  Name: string;
+  Code: string;
+  OperatingMIC: string;
+  Country: string;
+  Currency: string;
+  Timezone: string;
+  isOpen: boolean;
+  TradingHours: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+export interface SymbolChangeItem {
+  date: string;
+  old_code: string;
+  new_code: string;
+  old_exchange: string;
+  new_exchange: string;
+  [key: string]: unknown;
+}
+
 // ── Treasury ──
 
 export interface TreasuryParams extends DateRange {}
+
+export interface TreasuryRateItem {
+  date: string;
+  [key: string]: unknown;
+}
 
 // ── CBOE ──
 
@@ -320,6 +618,18 @@ export interface CboeIndexParams {
   'filter[date]': DateString;
 }
 
+export interface CboeIndexItem {
+  code: string;
+  name: string;
+  exchange: string;
+  [key: string]: unknown;
+}
+
+export interface CboeIndexData {
+  data: Record<string, unknown>[];
+  [key: string]: unknown;
+}
+
 // ── Symbol Change History ──
 
 export interface SymbolChangeHistoryParams extends DateRange {}
@@ -327,6 +637,19 @@ export interface SymbolChangeHistoryParams extends DateRange {}
 // ── Exchange Details ──
 
 export interface ExchangeDetailsParams extends DateRange {}
+
+// ── User ──
+
+export interface UserData {
+  name: string;
+  email: string;
+  subscriptionType: string;
+  paymentMethod: string;
+  apiRequests: number;
+  apiRequestsDate: string;
+  dailyRateLimit: number;
+  [key: string]: unknown;
+}
 
 // ── Marketplace: Unicorn Bay Options ──
 
@@ -359,6 +682,70 @@ export interface OptionsUnderlyingSymbolsParams {
   'page[limit]'?: number;
 }
 
+export interface OptionsContract {
+  underlying_symbol: string;
+  contract: string;
+  type: string;
+  expiration_date: string;
+  strike: number;
+  [key: string]: unknown;
+}
+
+export interface OptionsContractsResponse {
+  data: OptionsContract[];
+  meta: {
+    total: number;
+    limit: number;
+    offset: number;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+export interface OptionsEodItem {
+  underlying_symbol: string;
+  contract: string;
+  type: string;
+  expiration_date: string;
+  strike: number;
+  date: string;
+  open?: number;
+  high?: number;
+  low?: number;
+  close?: number;
+  volume?: number;
+  open_interest?: number;
+  implied_volatility?: number;
+  [key: string]: unknown;
+}
+
+export interface OptionsEodResponse {
+  data: OptionsEodItem[];
+  meta: {
+    total: number;
+    limit: number;
+    offset: number;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+export interface OptionsUnderlyingSymbol {
+  underlying_symbol: string;
+  [key: string]: unknown;
+}
+
+export interface OptionsUnderlyingSymbolsResponse {
+  data: OptionsUnderlyingSymbol[];
+  meta: {
+    total: number;
+    limit: number;
+    offset: number;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
 // ── Marketplace: Unicorn Bay S&P Global ──
 
 export interface SpGlobalComponentsParams {
@@ -367,12 +754,31 @@ export interface SpGlobalComponentsParams {
   to?: DateString;
 }
 
+export interface SpGlobalIndex {
+  code: string;
+  name: string;
+  [key: string]: unknown;
+}
+
+export interface SpGlobalComponentsResponse {
+  Components: Record<string, unknown>[];
+  [key: string]: unknown;
+}
+
 // ── Marketplace: Unicorn Bay Tick Data ──
 
 export interface MarketplaceTickDataParams {
   from?: number;
   to?: number;
   limit?: number;
+}
+
+export interface MarketplaceTickDataPoint {
+  timestamp: number;
+  datetime: string;
+  price: number;
+  volume: number;
+  [key: string]: unknown;
 }
 
 // ── Marketplace: Trading Hours ──
@@ -392,9 +798,42 @@ export interface TradingHoursStatusParams {
   'filter[market]'?: string;
 }
 
+export interface TradingHoursMarket {
+  code: string;
+  name: string;
+  country: string;
+  [key: string]: unknown;
+}
+
+export interface TradingHoursDetail {
+  code: string;
+  name: string;
+  country: string;
+  timezone: string;
+  isOpen: boolean;
+  [key: string]: unknown;
+}
+
+export interface TradingHoursLookupResult {
+  code: string;
+  market: string;
+  [key: string]: unknown;
+}
+
+export interface TradingHoursStatus {
+  code: string;
+  name: string;
+  isOpen: boolean;
+  [key: string]: unknown;
+}
+
 // ── Marketplace: illio ──
 
 export type IllioIndexId = 'SnP500' | 'DJI' | 'NDX';
+
+export interface IllioChapterData {
+  [key: string]: unknown;
+}
 
 // ── Marketplace: Praams ──
 
@@ -430,11 +869,61 @@ export interface PraamsExploreBondBody extends PraamsExploreEquityBody {
   excludePerpetuals?: boolean;
 }
 
+export interface PraamsAnalysisResult {
+  [key: string]: unknown;
+}
+
+export interface PraamsBankStatementResult {
+  [key: string]: unknown;
+}
+
+export interface PraamsExploreResult {
+  [key: string]: unknown;
+}
+
+export interface PraamsReportResult {
+  [key: string]: unknown;
+}
+
 // ── Marketplace: InvestVerte ESG ──
 
 export interface EsgCompanyParams {
   year?: number;
   frequency?: 'FY' | 'Q1' | 'Q2' | 'Q3' | 'Q4';
+}
+
+export interface EsgCompanyItem {
+  symbol: string;
+  name: string;
+  [key: string]: unknown;
+}
+
+export interface EsgCountryItem {
+  code: string;
+  name: string;
+  [key: string]: unknown;
+}
+
+export interface EsgSectorItem {
+  code: string;
+  name: string;
+  [key: string]: unknown;
+}
+
+export interface EsgData {
+  [key: string]: unknown;
+}
+
+// ── Marketplace: Robexia ──
+
+export interface RobexiaTechAnalysisResult {
+  [key: string]: unknown;
+}
+
+// ── Marketplace: Main Street Data ──
+
+export interface MainStreetDataMetricsResult {
+  [key: string]: unknown;
 }
 
 // ── WebSocket ──
