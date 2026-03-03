@@ -1,0 +1,8 @@
+{
+  "type": "earnings",
+  "description": "Tracker of earnings across the whole stock market.",
+  "symbols_count": 1,
+  "earnings": [
+    {"code": "AAPL.US", "report_date": "2024-01-25", "date": "2024-01-25", "before_after_market": "AfterMarket", "currency": "USD", "actual": 2.18, "estimate": 2.1, "difference": 0.08, "percent": 3.81}
+  ]
+}

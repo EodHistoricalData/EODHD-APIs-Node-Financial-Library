@@ -1,0 +1,1 @@
+{"name": "Test User", "email": "test@example.com", "subscriptionType": "all-world-extended", "paymentMethod": "stripe", "apiRequests": 450, "apiRequestsDate": "2024-01-15", "dailyRateLimit": 100000}

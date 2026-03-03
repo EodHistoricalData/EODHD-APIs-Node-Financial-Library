@@ -1,0 +1,11 @@
+[
+  {
+    "date": "2024-01-15T10:30:00+00:00",
+    "title": "Apple Reports Q1 Earnings",
+    "content": "Full article text describing quarterly earnings results.",
+    "link": "https://example.com/news/1",
+    "symbols": ["AAPL.US"],
+    "tags": ["earnings"],
+    "sentiment": {"polarity": 0.15, "neg": 0.1, "neu": 0.7, "pos": 0.2}
+  }
+]

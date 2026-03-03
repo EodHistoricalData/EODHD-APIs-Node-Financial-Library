@@ -1,0 +1,6 @@
+{
+  "General": {"Code": "AAPL", "Type": "Common Stock", "Name": "Apple Inc", "Exchange": "NASDAQ", "CurrencyCode": "USD"},
+  "Highlights": {"MarketCapitalization": 2890000000000, "EBITDA": 130541000000},
+  "Valuation": {"TrailingPE": 28.5, "ForwardPE": 26.2},
+  "Financials": {"Balance_Sheet": {}, "Income_Statement": {}, "Cash_Flow": {}}
+}
