@@ -1,3 +1,4 @@
+import { calculateDelay } from './retry.js';
 import type { WebSocketFeed, WebSocketOptions, WebSocketTick } from './types.js';
 
 type WebSocketListener = (data: WebSocketTick) => void;
@@ -9,7 +10,7 @@ const WS_BASE_URL = 'wss://ws.eodhistoricaldata.com/ws';
  * Real-time WebSocket client for streaming market data from EODHD.
  *
  * Supports US trades, US quotes, forex, and crypto feeds with automatic
- * reconnection on connection loss.
+ * reconnection using exponential backoff with jitter on connection loss.
  *
  * Typically created via {@link EODHDClient.websocket} rather than directly.
  *
@@ -19,6 +20,10 @@ const WS_BASE_URL = 'wss://ws.eodhistoricaldata.com/ws';
  * ws.on('data', (tick) => console.log(tick.s, tick.p, tick.v));
  * ws.on('error', (err) => console.error(err));
  * ws.on('close', () => console.log('disconnected'));
+ * ws.on('reconnectFailed', () => console.log('all reconnect attempts exhausted'));
+ * // Post-connect symbol changes:
+ * ws.subscribe(['GOOG']);
+ * ws.unsubscribe(['AAPL']);
  * // Later: ws.close();
  * ```
  *
@@ -29,8 +34,10 @@ export class EODHDWebSocket {
   private listeners: WebSocketListener[] = [];
   private errorListeners: ErrorListener[] = [];
   private closeListeners: (() => void)[] = [];
+  private reconnectFailedListeners: (() => void)[] = [];
   private reconnectAttempts = 0;
   private closed = false;
+  private reconnecting = false;
 
   /**
    * Create a new WebSocket client instance.
@@ -51,6 +58,8 @@ export class EODHDWebSocket {
    * Start the WebSocket connection and subscribe to configured symbols.
    *
    * Called automatically by {@link EODHDClient.websocket}. Returns `this` for chaining.
+   * The connection is established asynchronously; in Node.js the `ws` package is
+   * loaded via dynamic `import('ws')` for ESM compatibility.
    *
    * @returns This instance for method chaining
    *
@@ -61,15 +70,16 @@ export class EODHDWebSocket {
    */
   connect(): this {
     this.closed = false;
+    this.reconnecting = false;
     const url = `${WS_BASE_URL}/${this.feed}?api_token=${this.apiToken}`;
-    this.createConnection(url);
+    this.initConnection(url);
     return this;
   }
 
   /**
-   * Register an event listener for data ticks, errors, or close events.
+   * Register an event listener for data ticks, errors, close, or reconnectFailed events.
    *
-   * @param event - Event name: `"data"`, `"error"`, or `"close"`
+   * @param event - Event name: `"data"`, `"error"`, `"close"`, or `"reconnectFailed"`
    * @param listener - Callback function for the event
    * @returns This instance for method chaining
    *
@@ -80,17 +90,52 @@ export class EODHDWebSocket {
    * });
    * ws.on('error', (err) => console.error('WS error:', err.message));
    * ws.on('close', () => console.log('Connection closed'));
+   * ws.on('reconnectFailed', () => console.log('Reconnect exhausted'));
    * ```
    */
   on(event: 'data', listener: WebSocketListener): this;
   on(event: 'error', listener: ErrorListener): this;
   on(event: 'close', listener: () => void): this;
+  on(event: 'reconnectFailed', listener: () => void): this;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   on(event: string, listener: (...args: any[]) => void): this {
     if (event === 'data') this.listeners.push(listener as WebSocketListener);
     else if (event === 'error') this.errorListeners.push(listener as ErrorListener);
     else if (event === 'close') this.closeListeners.push(listener as () => void);
+    else if (event === 'reconnectFailed') this.reconnectFailedListeners.push(listener as () => void);
     return this;
+  }
+
+  /**
+   * Subscribe to additional symbols on an open connection.
+   *
+   * @param symbols - Symbols to subscribe to
+   *
+   * @example
+   * ```ts
+   * ws.subscribe(['GOOG', 'TSLA']);
+   * ```
+   */
+  subscribe(symbols: string[]): void {
+    if (this.ws && symbols.length > 0) {
+      this.ws.send(JSON.stringify({ action: 'subscribe', symbols: symbols.join(',') }));
+    }
+  }
+
+  /**
+   * Unsubscribe from symbols on an open connection.
+   *
+   * @param symbols - Symbols to unsubscribe from
+   *
+   * @example
+   * ```ts
+   * ws.unsubscribe(['AAPL']);
+   * ```
+   */
+  unsubscribe(symbols: string[]): void {
+    if (this.ws && symbols.length > 0) {
+      this.ws.send(JSON.stringify({ action: 'unsubscribe', symbols: symbols.join(',') }));
+    }
   }
 
   /**
@@ -103,21 +148,31 @@ export class EODHDWebSocket {
    */
   close(): void {
     this.closed = true;
+    this.reconnecting = false;
     this.ws?.close();
     this.ws = null;
   }
 
-  private createConnection(url: string): void {
+  /** Set up connection — uses dynamic import('ws') in Node.js for ESM compat. */
+  private initConnection(url: string): void {
+    if (typeof globalThis.WebSocket !== 'undefined') {
+      this.createConnection(url, globalThis.WebSocket);
+    } else {
+      // Node.js: dynamic import for ESM compatibility
+      import('ws')
+        .then((mod) => {
+          const WS = mod.default || mod;
+          this.createConnection(url, WS as unknown as typeof WebSocket);
+        })
+        .catch((err) => {
+          this.emitError(new Error(`Failed to load ws package: ${err}`));
+        });
+    }
+  }
+
+  private createConnection(url: string, WsCtor: typeof WebSocket | (new (url: string) => WebSocket)): void {
     try {
-      // Use native WebSocket in browser, or ws package in Node.js
-      if (typeof globalThis.WebSocket !== 'undefined') {
-        this.ws = new globalThis.WebSocket(url);
-      } else {
-        // Node.js: dynamically require ws
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const WS = require('ws');
-        this.ws = new WS(url) as WebSocket;
-      }
+      this.ws = new (WsCtor as new (url: string) => WebSocket)(url);
     } catch (err) {
       this.emitError(new Error(`Failed to create WebSocket: ${err}`));
       return;
@@ -125,6 +180,7 @@ export class EODHDWebSocket {
 
     this.ws!.onopen = () => {
       this.reconnectAttempts = 0;
+      this.reconnecting = false;
       // Subscribe to symbols
       if (this.symbols.length > 0) {
         const msg = JSON.stringify({ action: 'subscribe', symbols: this.symbols.join(',') });
@@ -133,15 +189,17 @@ export class EODHDWebSocket {
     };
 
     this.ws!.onmessage = (event: MessageEvent) => {
+      let data: unknown;
       try {
-        const data = JSON.parse(typeof event.data === 'string' ? event.data : event.data.toString());
-        // Skip status messages
-        if (data.status_code) return;
-        for (const listener of this.listeners) {
-          listener(data);
-        }
-      } catch {
-        // ignore parse errors
+        data = JSON.parse(typeof event.data === 'string' ? event.data : event.data.toString());
+      } catch (err) {
+        this.emitError(new Error(`WebSocket message parse error: ${err}`));
+        return;
+      }
+      // Skip status messages
+      if (data && typeof data === 'object' && 'status_code' in data) return;
+      for (const listener of this.listeners) {
+        listener(data as WebSocketTick);
       }
     };
 
@@ -150,30 +208,52 @@ export class EODHDWebSocket {
     };
 
     this.ws!.onclose = () => {
-      if (!this.closed) {
-        this.tryReconnect(url);
+      if (this.closed) {
+        // User called close() — fire close listeners
+        this.emitClose();
+        return;
       }
-      for (const listener of this.closeListeners) {
-        listener();
+
+      // Attempt reconnect
+      const maxAttempts = this.options.maxReconnectAttempts ?? 5;
+      if (this.reconnectAttempts < maxAttempts) {
+        this.reconnecting = true;
+        this.tryReconnect(url);
+      } else {
+        // Reconnect exhausted
+        this.reconnecting = false;
+        for (const listener of this.reconnectFailedListeners) {
+          listener();
+        }
+        this.emitClose();
       }
     };
   }
 
   private tryReconnect(url: string): void {
-    const maxAttempts = this.options.maxReconnectAttempts ?? 5;
-    const interval = this.options.reconnectInterval ?? 3000;
+    this.reconnectAttempts++;
 
-    if (this.reconnectAttempts < maxAttempts) {
-      this.reconnectAttempts++;
-      setTimeout(() => {
-        if (!this.closed) this.createConnection(url);
-      }, interval);
-    }
+    const delay = calculateDelay(this.reconnectAttempts - 1, {
+      initialDelay: this.options.reconnectInterval ?? 3000,
+      maxDelay: 30000,
+      multiplier: 2,
+      maxRetries: this.options.maxReconnectAttempts ?? 5,
+    });
+
+    setTimeout(() => {
+      if (!this.closed) this.initConnection(url);
+    }, delay);
   }
 
   private emitError(error: Error): void {
     for (const listener of this.errorListeners) {
       listener(error);
+    }
+  }
+
+  private emitClose(): void {
+    for (const listener of this.closeListeners) {
+      listener();
     }
   }
 }
