@@ -48,8 +48,8 @@ import { RobexiaApi } from './marketplace/robexia.js';
 import { MainStreetDataApi } from './marketplace/mainstreetdata.js';
 
 export interface EODHDClientOptions {
-  /** Your EODHD API token */
-  apiToken: string;
+  /** Your EODHD API token (falls back to EODHD_API_TOKEN env var) */
+  apiToken?: string;
   /** Base URL (default: https://eodhd.com/api) */
   baseUrl?: string;
   /** Request timeout in ms (default: 30000) */
@@ -90,9 +90,16 @@ export class EODHDClient {
   private readonly apiToken: string;
 
   constructor(options: EODHDClientOptions) {
-    this.apiToken = options.apiToken;
+    const envToken = typeof process !== 'undefined' ? process.env?.EODHD_API_TOKEN?.trim() : undefined;
+    const resolved = options.apiToken?.trim() || envToken || '';
+    if (!resolved) {
+      throw new Error(
+        'apiToken is required. Pass it to EODHDClient({ apiToken }) or set EODHD_API_TOKEN environment variable.',
+      );
+    }
+    this.apiToken = resolved;
     this.http = new HttpClient({
-      apiToken: options.apiToken,
+      apiToken: resolved,
       baseUrl: options.baseUrl ?? 'https://eodhd.com/api/',
       timeout: options.timeout ?? 30_000,
     });

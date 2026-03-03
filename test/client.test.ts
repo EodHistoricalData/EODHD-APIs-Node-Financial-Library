@@ -74,6 +74,65 @@ describe('EODHDClient', () => {
     });
   });
 
+  describe('apiToken validation', () => {
+    const savedEnv = process.env.EODHD_API_TOKEN;
+
+    afterEach(() => {
+      if (savedEnv !== undefined) {
+        process.env.EODHD_API_TOKEN = savedEnv;
+      } else {
+        delete process.env.EODHD_API_TOKEN;
+      }
+    });
+
+    it('throws if apiToken is empty string', () => {
+      delete process.env.EODHD_API_TOKEN;
+      expect(() => new EODHDClient({ apiToken: '' })).toThrow('apiToken is required');
+    });
+
+    it('throws if apiToken is whitespace only', () => {
+      delete process.env.EODHD_API_TOKEN;
+      expect(() => new EODHDClient({ apiToken: '   ' })).toThrow('apiToken is required');
+    });
+
+    it('reads EODHD_API_TOKEN from env if no apiToken provided', () => {
+      process.env.EODHD_API_TOKEN = 'env-token';
+      const client = new EODHDClient({} as any);
+      expect(client).toBeDefined();
+    });
+
+    it('throws if neither apiToken nor env var set', () => {
+      delete process.env.EODHD_API_TOKEN;
+      expect(() => new EODHDClient({} as any)).toThrow('apiToken is required');
+    });
+
+    it('trims apiToken', async () => {
+      const client = new EODHDClient({ apiToken: '  my-token  ' });
+      await client.user();
+
+      const url = getCalledUrl(fetch);
+      expect(url).toContain('api_token=my-token');
+    });
+
+    it('trims env var token', async () => {
+      process.env.EODHD_API_TOKEN = '  env-trimmed  ';
+      const client = new EODHDClient({} as any);
+      await client.user();
+
+      const url = getCalledUrl(fetch);
+      expect(url).toContain('api_token=env-trimmed');
+    });
+
+    it('prefers explicit apiToken over env var', async () => {
+      process.env.EODHD_API_TOKEN = 'env-token';
+      const client = new EODHDClient({ apiToken: 'explicit-token' });
+      await client.user();
+
+      const url = getCalledUrl(fetch);
+      expect(url).toContain('api_token=explicit-token');
+    });
+  });
+
   // ── Exposes sub-modules ─────────────────────────────────────────────────
 
   describe('sub-module exposure', () => {
