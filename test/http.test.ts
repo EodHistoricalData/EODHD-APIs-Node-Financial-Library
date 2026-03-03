@@ -17,6 +17,7 @@ function createHttpClient(overrides: Partial<{ apiToken: string; baseUrl: string
     apiToken: overrides.apiToken ?? 'demo',
     baseUrl: overrides.baseUrl ?? 'https://eodhd.com/api/',
     timeout: overrides.timeout ?? 5000,
+    retryOptions: { maxRetries: 0, initialDelay: 1000, maxDelay: 30000, multiplier: 2 },
   });
 }
 
@@ -28,6 +29,7 @@ function jsonResponse(body: unknown, status = 200) {
     json: () => Promise.resolve(body),
     text: () => Promise.resolve(JSON.stringify(body)),
     arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
+    headers: new Headers(),
   };
 }
 
@@ -165,6 +167,7 @@ describe('HttpClient', () => {
         status: 200,
         arrayBuffer: () => Promise.resolve(buf),
         text: () => Promise.resolve(''),
+        headers: new Headers(),
       });
 
       const http = createHttpClient();
@@ -181,6 +184,7 @@ describe('HttpClient', () => {
         status: 200,
         arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
         text: () => Promise.resolve(''),
+        headers: new Headers(),
       });
 
       const http = createHttpClient();
@@ -196,6 +200,7 @@ describe('HttpClient', () => {
         status: 200,
         arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
         text: () => Promise.resolve(''),
+        headers: new Headers(),
       });
 
       const http = createHttpClient({ apiToken: 'mykey' });
@@ -279,6 +284,7 @@ describe('HttpClient', () => {
         status: 500,
         statusText: 'Internal Server Error',
         text: () => Promise.reject(new Error('fail')),
+        headers: new Headers(),
       });
 
       const http = createHttpClient();
@@ -297,6 +303,7 @@ describe('HttpClient', () => {
         status: 502,
         statusText: 'Bad Gateway',
         text: () => Promise.resolve(''),
+        headers: new Headers(),
       });
 
       const http = createHttpClient();

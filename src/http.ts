@@ -6,6 +6,8 @@ import {
   EODHDTimeoutError,
 } from './errors.js';
 import { type Logger, NO_OP_LOGGER, redactUrl } from './logger.js';
+import { type RetryOptions, DEFAULT_RETRY, calculateDelay, sleep } from './retry.js';
+import type { RateLimitInfo } from './types.js';
 
 export type { ErrorCode } from './errors.js';
 export { EODHDError, EODHDAuthError, EODHDRateLimitError, EODHDNetworkError, EODHDTimeoutError };
@@ -15,6 +17,7 @@ export interface HttpClientConfig {
   baseUrl: string;
   timeout: number;
   logger?: Logger;
+  retryOptions?: RetryOptions;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,74 +25,87 @@ type Params = Record<string, any>;
 
 export class HttpClient {
   private readonly logger: Logger;
+  private readonly retryOptions: RetryOptions;
 
   constructor(private config: HttpClientConfig) {
     this.logger = config.logger ?? NO_OP_LOGGER;
+    this.retryOptions = config.retryOptions ?? DEFAULT_RETRY;
   }
 
   async get<T = unknown>(path: string, params: Params = {}): Promise<T> {
-    const url = this.buildUrl(path, { ...params, api_token: this.config.apiToken, fmt: 'json' });
-    const redacted = redactUrl(url.toString());
-    this.logger.debug(`GET ${redacted}`);
-    const start = Date.now();
-    let response: Response;
-    try {
-      response = await fetch(url.toString(), {
-        method: 'GET',
-        signal: AbortSignal.timeout(this.config.timeout),
-      });
-    } catch (err) {
-      throw wrapFetchError(err);
-    }
-    this.logger.debug(`${response.status} ${redacted} (${Date.now() - start}ms)`);
-    if (!response.ok) {
-      await this.handleError(response);
-    }
-    return response.json() as Promise<T>;
+    return this.requestWithRetry<T>('GET', path, { ...params, fmt: 'json' });
   }
 
   async getBuffer(path: string, params: Params = {}): Promise<ArrayBuffer> {
-    const url = this.buildUrl(path, { ...params, api_token: this.config.apiToken });
-    const redacted = redactUrl(url.toString());
-    this.logger.debug(`GET ${redacted}`);
-    const start = Date.now();
-    let response: Response;
-    try {
-      response = await fetch(url.toString(), {
-        method: 'GET',
-        signal: AbortSignal.timeout(this.config.timeout),
-      });
-    } catch (err) {
-      throw wrapFetchError(err);
-    }
-    this.logger.debug(`${response.status} ${redacted} (${Date.now() - start}ms)`);
-    if (!response.ok) {
-      await this.handleError(response);
-    }
-    return response.arrayBuffer();
+    return this.requestWithRetry<ArrayBuffer>('GET', path, params, undefined, true);
   }
 
   async post<T = unknown>(path: string, params: Params = {}, body: unknown = {}): Promise<T> {
-    const url = this.buildUrl(path, { ...params, api_token: this.config.apiToken, fmt: 'json' });
+    return this.requestWithRetry<T>('POST', path, { ...params, fmt: 'json' }, body);
+  }
+
+  private async requestWithRetry<T>(
+    method: string,
+    path: string,
+    params: Params,
+    body?: unknown,
+    isBuffer?: boolean,
+  ): Promise<T> {
+    const url = this.buildUrl(path, { ...params, api_token: this.config.apiToken });
     const redacted = redactUrl(url.toString());
-    this.logger.debug(`POST ${redacted}`);
-    const start = Date.now();
-    let response: Response;
-    try {
-      response = await fetch(url.toString(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        signal: AbortSignal.timeout(this.config.timeout),
-      });
-    } catch (err) {
-      throw wrapFetchError(err);
+    let lastError: Error | undefined;
+
+    for (let attempt = 0; attempt <= this.retryOptions.maxRetries; attempt++) {
+      this.logger.debug(`${method} ${redacted}${attempt > 0 ? ` (attempt ${attempt + 1})` : ''}`);
+      const start = Date.now();
+
+      try {
+        const fetchOptions: RequestInit = {
+          method,
+          signal: AbortSignal.timeout(this.config.timeout),
+        };
+        if (body !== undefined) {
+          fetchOptions.headers = { 'Content-Type': 'application/json' };
+          fetchOptions.body = JSON.stringify(body);
+        }
+
+        const response = await fetch(url.toString(), fetchOptions);
+        this.logger.debug(`${response.status} ${redacted} (${Date.now() - start}ms)`);
+
+        if (!response.ok) {
+          await this.handleError(response);
+        }
+
+        // Parse rate limit headers on success
+        const rateLimit = parseRateLimitHeaders(response.headers);
+        if (rateLimit?.remaining !== undefined && rateLimit.remaining < 10) {
+          this.logger.warn(`Rate limit low: ${rateLimit.remaining}/${rateLimit.limit} remaining`);
+        }
+
+        if (isBuffer) {
+          return response.arrayBuffer() as Promise<T>;
+        }
+        return response.json() as Promise<T>;
+      } catch (error) {
+        const wrapped = error instanceof EODHDError ? error : wrapFetchError(error);
+        lastError = wrapped;
+
+        if (!wrapped.retryable) throw wrapped;
+        if (attempt >= this.retryOptions.maxRetries) throw wrapped;
+
+        let delay: number;
+        if (wrapped instanceof EODHDRateLimitError && wrapped.retryAfter) {
+          delay = wrapped.retryAfter * 1000;
+        } else {
+          delay = calculateDelay(attempt, this.retryOptions);
+        }
+
+        this.logger.debug(`Retry ${attempt + 1}/${this.retryOptions.maxRetries} after ${Math.round(delay)}ms`);
+        await sleep(delay);
+      }
     }
-    this.logger.debug(`${response.status} ${redacted} (${Date.now() - start}ms)`);
-    if (!response.ok) {
-      await this.handleError(response);
-    }
-    return response.json() as Promise<T>;
+
+    throw lastError!;
   }
 
   private buildUrl(path: string, params: Params): URL {
@@ -128,6 +144,18 @@ export class HttpClient {
     const code = status >= 500 ? 'server_error' : 'client_error';
     throw new EODHDError(message, status, code);
   }
+}
+
+function parseRateLimitHeaders(headers: Headers): RateLimitInfo | undefined {
+  const limit = headers.get('X-RateLimit-Limit');
+  const remaining = headers.get('X-RateLimit-Remaining');
+  const reset = headers.get('X-RateLimit-Reset');
+  if (!limit && !remaining && !reset) return undefined;
+  return {
+    limit: limit ? Number(limit) : undefined,
+    remaining: remaining ? Number(remaining) : undefined,
+    reset: reset ? Number(reset) : undefined,
+  };
 }
 
 function parseRetryAfter(header: string | null): number | undefined {

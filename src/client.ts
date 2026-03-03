@@ -1,6 +1,7 @@
 import { HttpClient } from './http.js';
 import { EODHDWebSocket } from './websocket.js';
 import { type Logger, resolveLogger } from './logger.js';
+import { DEFAULT_RETRY } from './retry.js';
 import type {
   Ticker, EodParams, EodDataPoint, IntradayParams, IntradayDataPoint,
   RealTimeQuote, RealTimeParams, UsQuoteDelayedParams, UsQuoteDelayedResult,
@@ -55,6 +56,8 @@ export interface EODHDClientOptions {
   baseUrl?: string;
   /** Request timeout in ms (default: 30000) */
   timeout?: number;
+  /** Max retry attempts on retryable errors (default: 2, set 0 to disable) */
+  maxRetries?: number;
   /** Optional logger; set EODHD_LOG=debug env var for built-in console logger */
   logger?: Logger;
 }
@@ -106,6 +109,7 @@ export class EODHDClient {
       baseUrl: options.baseUrl ?? 'https://eodhd.com/api/',
       timeout: options.timeout ?? 30_000,
       logger: resolveLogger(options.logger),
+      retryOptions: { ...DEFAULT_RETRY, ...(options.maxRetries !== undefined ? { maxRetries: options.maxRetries } : {}) },
     });
 
     // Core API

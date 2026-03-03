@@ -8,11 +8,12 @@ function mockFetchOk(body: unknown = {}) {
     json: () => Promise.resolve(body),
     text: () => Promise.resolve(JSON.stringify(body)),
     arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
+    headers: new Headers(),
   });
 }
 
 function createClient() {
-  return new EODHDClient({ apiToken: 'test-token', baseUrl: 'https://eodhd.com/api/', timeout: 5000 });
+  return new EODHDClient({ apiToken: 'test-token', baseUrl: 'https://eodhd.com/api/', timeout: 5000, maxRetries: 0 });
 }
 
 function getCalledUrl(mock: ReturnType<typeof vi.fn>): string {

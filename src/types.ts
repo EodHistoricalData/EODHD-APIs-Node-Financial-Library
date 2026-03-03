@@ -1,3 +1,10 @@
+/** Rate limit information parsed from response headers */
+export interface RateLimitInfo {
+  limit?: number;
+  remaining?: number;
+  reset?: number;
+}
+
 /** Format: SYMBOL.EXCHANGE, e.g. "AAPL.US", "MSFT.US", "VOD.LSE" */
 export type Ticker = string;
 
