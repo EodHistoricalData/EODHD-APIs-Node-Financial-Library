@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { HttpClient, EODHDError } from '../src/http.js';
+import { HttpClient } from '../src/http.js';
+import {
+  EODHDError,
+  EODHDAuthError,
+  EODHDRateLimitError,
+  EODHDNetworkError,
+  EODHDTimeoutError,
+} from '../src/errors.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -24,7 +31,8 @@ function jsonResponse(body: unknown, status = 200) {
   };
 }
 
-function errorResponse(status: number, body: string) {
+function errorResponse(status: number, body: string, headers: Record<string, string> = {}) {
+  const headerMap = new Map(Object.entries(headers));
   return {
     ok: false,
     status,
@@ -32,6 +40,7 @@ function errorResponse(status: number, body: string) {
     json: () => Promise.reject(new Error('not json')),
     text: () => Promise.resolve(body),
     arrayBuffer: () => Promise.reject(new Error('not buffer')),
+    headers: { get: (name: string) => headerMap.get(name) ?? null },
   };
 }
 
@@ -311,6 +320,160 @@ describe('HttpClient', () => {
 
       const http = createHttpClient();
       await expect(http.post('/something', {}, {})).rejects.toThrow(EODHDError);
+    });
+  });
+
+  // ── Specific error types ─────────────────────────────────────────────────
+
+  describe('specific error types', () => {
+    it('throws EODHDAuthError on 401', async () => {
+      mockFetch.mockResolvedValue(errorResponse(401, 'Unauthorized'));
+
+      const http = createHttpClient();
+      await expect(http.get('/user')).rejects.toThrow(EODHDAuthError);
+    });
+
+    it('throws EODHDAuthError on 403', async () => {
+      mockFetch.mockResolvedValue(errorResponse(403, 'Forbidden'));
+
+      const http = createHttpClient();
+      try {
+        await http.get('/user');
+        expect.unreachable('should have thrown');
+      } catch (err) {
+        expect(err).toBeInstanceOf(EODHDAuthError);
+        expect((err as EODHDAuthError).statusCode).toBe(403);
+        expect((err as EODHDAuthError).code).toBe('auth_error');
+      }
+    });
+
+    it('throws EODHDRateLimitError on 429', async () => {
+      mockFetch.mockResolvedValue(errorResponse(429, 'Rate limit exceeded'));
+
+      const http = createHttpClient();
+      await expect(http.get('/user')).rejects.toThrow(EODHDRateLimitError);
+    });
+
+    it('parses Retry-After header as seconds', async () => {
+      mockFetch.mockResolvedValue(errorResponse(429, 'Rate limit exceeded', { 'Retry-After': '30' }));
+
+      const http = createHttpClient();
+      try {
+        await http.get('/user');
+        expect.unreachable('should have thrown');
+      } catch (err) {
+        expect(err).toBeInstanceOf(EODHDRateLimitError);
+        expect((err as EODHDRateLimitError).retryAfter).toBe(30);
+      }
+    });
+
+    it('retryAfter is undefined when Retry-After header missing', async () => {
+      mockFetch.mockResolvedValue(errorResponse(429, 'Rate limit exceeded'));
+
+      const http = createHttpClient();
+      try {
+        await http.get('/user');
+        expect.unreachable('should have thrown');
+      } catch (err) {
+        expect(err).toBeInstanceOf(EODHDRateLimitError);
+        expect((err as EODHDRateLimitError).retryAfter).toBeUndefined();
+      }
+    });
+
+    it('throws EODHDError with server_error code for 5xx', async () => {
+      mockFetch.mockResolvedValue(errorResponse(503, 'Service Unavailable'));
+
+      const http = createHttpClient();
+      try {
+        await http.get('/user');
+        expect.unreachable('should have thrown');
+      } catch (err) {
+        expect(err).toBeInstanceOf(EODHDError);
+        expect((err as EODHDError).code).toBe('server_error');
+      }
+    });
+
+    it('throws EODHDError with client_error code for 4xx', async () => {
+      mockFetch.mockResolvedValue(errorResponse(404, 'Not Found'));
+
+      const http = createHttpClient();
+      try {
+        await http.get('/user');
+        expect.unreachable('should have thrown');
+      } catch (err) {
+        expect(err).toBeInstanceOf(EODHDError);
+        expect((err as EODHDError).code).toBe('client_error');
+      }
+    });
+  });
+
+  // ── Fetch error wrapping ─────────────────────────────────────────────────
+
+  describe('fetch error wrapping', () => {
+    it('wraps AbortError as EODHDTimeoutError', async () => {
+      const abortError = new DOMException('The operation was aborted', 'AbortError');
+      mockFetch.mockRejectedValue(abortError);
+
+      const http = createHttpClient();
+      await expect(http.get('/user')).rejects.toThrow(EODHDTimeoutError);
+    });
+
+    it('wraps TimeoutError DOMException as EODHDTimeoutError', async () => {
+      const timeoutError = new DOMException('The operation timed out', 'TimeoutError');
+      mockFetch.mockRejectedValue(timeoutError);
+
+      const http = createHttpClient();
+      await expect(http.get('/user')).rejects.toThrow(EODHDTimeoutError);
+    });
+
+    it('wraps generic fetch error as EODHDNetworkError', async () => {
+      mockFetch.mockRejectedValue(new TypeError('Failed to fetch'));
+
+      const http = createHttpClient();
+      await expect(http.get('/user')).rejects.toThrow(EODHDNetworkError);
+    });
+
+    it('wraps fetch error for getBuffer', async () => {
+      mockFetch.mockRejectedValue(new TypeError('Failed to fetch'));
+
+      const http = createHttpClient();
+      await expect(http.getBuffer('/logo/AAPL')).rejects.toThrow(EODHDNetworkError);
+    });
+
+    it('wraps fetch error for post', async () => {
+      mockFetch.mockRejectedValue(new TypeError('Failed to fetch'));
+
+      const http = createHttpClient();
+      await expect(http.post('/something')).rejects.toThrow(EODHDNetworkError);
+    });
+
+    it('timeout wrapping preserves message', async () => {
+      const abortError = new DOMException('The operation was aborted', 'AbortError');
+      mockFetch.mockRejectedValue(abortError);
+
+      const http = createHttpClient();
+      try {
+        await http.get('/user');
+        expect.unreachable('should have thrown');
+      } catch (err) {
+        expect(err).toBeInstanceOf(EODHDTimeoutError);
+        expect((err as EODHDTimeoutError).message).toContain('timed out');
+        expect((err as EODHDTimeoutError).code).toBe('timeout');
+      }
+    });
+
+    it('network error preserves original message', async () => {
+      mockFetch.mockRejectedValue(new TypeError('net::ERR_CONNECTION_REFUSED'));
+
+      const http = createHttpClient();
+      try {
+        await http.get('/user');
+        expect.unreachable('should have thrown');
+      } catch (err) {
+        expect(err).toBeInstanceOf(EODHDNetworkError);
+        expect((err as EODHDNetworkError).message).toContain('ERR_CONNECTION_REFUSED');
+        expect((err as EODHDNetworkError).code).toBe('network_error');
+      }
     });
   });
 });
