@@ -5,6 +5,7 @@ import {
   EODHDNetworkError,
   EODHDTimeoutError,
 } from './errors.js';
+import { type Logger, NO_OP_LOGGER, redactUrl } from './logger.js';
 
 export type { ErrorCode } from './errors.js';
 export { EODHDError, EODHDAuthError, EODHDRateLimitError, EODHDNetworkError, EODHDTimeoutError };
@@ -13,16 +14,24 @@ export interface HttpClientConfig {
   apiToken: string;
   baseUrl: string;
   timeout: number;
+  logger?: Logger;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Params = Record<string, any>;
 
 export class HttpClient {
-  constructor(private config: HttpClientConfig) {}
+  private readonly logger: Logger;
+
+  constructor(private config: HttpClientConfig) {
+    this.logger = config.logger ?? NO_OP_LOGGER;
+  }
 
   async get<T = unknown>(path: string, params: Params = {}): Promise<T> {
     const url = this.buildUrl(path, { ...params, api_token: this.config.apiToken, fmt: 'json' });
+    const redacted = redactUrl(url.toString());
+    this.logger.debug(`GET ${redacted}`);
+    const start = Date.now();
     let response: Response;
     try {
       response = await fetch(url.toString(), {
@@ -32,6 +41,7 @@ export class HttpClient {
     } catch (err) {
       throw wrapFetchError(err);
     }
+    this.logger.debug(`${response.status} ${redacted} (${Date.now() - start}ms)`);
     if (!response.ok) {
       await this.handleError(response);
     }
@@ -40,6 +50,9 @@ export class HttpClient {
 
   async getBuffer(path: string, params: Params = {}): Promise<ArrayBuffer> {
     const url = this.buildUrl(path, { ...params, api_token: this.config.apiToken });
+    const redacted = redactUrl(url.toString());
+    this.logger.debug(`GET ${redacted}`);
+    const start = Date.now();
     let response: Response;
     try {
       response = await fetch(url.toString(), {
@@ -49,6 +62,7 @@ export class HttpClient {
     } catch (err) {
       throw wrapFetchError(err);
     }
+    this.logger.debug(`${response.status} ${redacted} (${Date.now() - start}ms)`);
     if (!response.ok) {
       await this.handleError(response);
     }
@@ -57,6 +71,9 @@ export class HttpClient {
 
   async post<T = unknown>(path: string, params: Params = {}, body: unknown = {}): Promise<T> {
     const url = this.buildUrl(path, { ...params, api_token: this.config.apiToken, fmt: 'json' });
+    const redacted = redactUrl(url.toString());
+    this.logger.debug(`POST ${redacted}`);
+    const start = Date.now();
     let response: Response;
     try {
       response = await fetch(url.toString(), {
@@ -68,6 +85,7 @@ export class HttpClient {
     } catch (err) {
       throw wrapFetchError(err);
     }
+    this.logger.debug(`${response.status} ${redacted} (${Date.now() - start}ms)`);
     if (!response.ok) {
       await this.handleError(response);
     }

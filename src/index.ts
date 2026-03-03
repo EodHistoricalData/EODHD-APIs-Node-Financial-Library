@@ -9,4 +9,6 @@ export {
 } from './errors.js';
 export type { ErrorCode } from './errors.js';
 export { EODHDWebSocket } from './websocket.js';
+export type { Logger } from './logger.js';
+export { createConsoleLogger, resolveLogger } from './logger.js';
 export * from './types.js';

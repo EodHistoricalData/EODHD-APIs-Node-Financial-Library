@@ -1,5 +1,6 @@
 import { HttpClient } from './http.js';
 import { EODHDWebSocket } from './websocket.js';
+import { type Logger, resolveLogger } from './logger.js';
 import type {
   Ticker, EodParams, EodDataPoint, IntradayParams, IntradayDataPoint,
   RealTimeQuote, RealTimeParams, UsQuoteDelayedParams, UsQuoteDelayedResult,
@@ -54,6 +55,8 @@ export interface EODHDClientOptions {
   baseUrl?: string;
   /** Request timeout in ms (default: 30000) */
   timeout?: number;
+  /** Optional logger; set EODHD_LOG=debug env var for built-in console logger */
+  logger?: Logger;
 }
 
 export class EODHDClient {
@@ -102,6 +105,7 @@ export class EODHDClient {
       apiToken: resolved,
       baseUrl: options.baseUrl ?? 'https://eodhd.com/api/',
       timeout: options.timeout ?? 30_000,
+      logger: resolveLogger(options.logger),
     });
 
     // Core API
