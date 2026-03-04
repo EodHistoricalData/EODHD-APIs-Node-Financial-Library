@@ -1,33 +1,28 @@
 ---
 name: Bug Report
-about: Report a bug in the eodhd SDK
+about: Report a bug in the EODHD Node.js SDK
+title: ''
 labels: bug
+assignees: ''
 ---
 
-## Description
+**SDK version:**
+**Node.js version:**
+**Runtime:** (Node.js / Deno / Bun / Browser)
 
-A clear description of the bug.
+**Describe the bug**
+A clear description of what the bug is.
 
-## Steps to Reproduce
-
+**To Reproduce**
 ```typescript
-import { EODHDClient } from 'eodhd';
-
-const client = new EODHDClient({ apiToken: 'demo' });
-// code that triggers the bug
+// Minimal code to reproduce
 ```
 
-## Expected Behavior
-
+**Expected behavior**
 What you expected to happen.
 
-## Actual Behavior
-
+**Actual behavior**
 What actually happened. Include error messages if any.
 
-## Environment
-
-- **eodhd version:** x.x.x
-- **Node.js version:** x.x.x
-- **OS:** (e.g., macOS 15, Ubuntu 24.04)
-- **TypeScript version** (if applicable): x.x.x
+**Additional context**
+Any other context (OS, network setup, etc.)

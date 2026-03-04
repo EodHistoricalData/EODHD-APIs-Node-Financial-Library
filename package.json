@@ -1,6 +1,7 @@
 {
   "name": "eodhd",
   "version": "1.0.0",
+  "type": "module",
   "description": "Official Node.js/TypeScript library for EODHD Financial Data APIs",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -32,7 +33,7 @@
     "test": "node --import tsx test/smoke.ts",
     "test:unit": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run typecheck && npm run test:unit && npm run build"
   },
   "keywords": [
     "eodhd",

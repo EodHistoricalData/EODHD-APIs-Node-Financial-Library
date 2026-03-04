@@ -6,6 +6,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue.svg)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
+[![Bundle Size](https://img.shields.io/bundlephobia/minzip/eodhd)](https://bundlephobia.com/package/eodhd)
 
 Official Node.js/TypeScript library for [EODHD Financial Data APIs](https://eodhd.com).
 
