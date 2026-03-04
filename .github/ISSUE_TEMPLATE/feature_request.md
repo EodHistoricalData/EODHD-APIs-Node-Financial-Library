@@ -1,25 +1,19 @@
 ---
 name: Feature Request
-about: Suggest a new feature or improvement
+about: Suggest a new feature or API endpoint
+title: ''
 labels: enhancement
+assignees: ''
 ---
 
-## Problem
+**Is your feature request related to a problem?**
+A clear description of the problem.
 
-What problem does this solve?
+**Describe the solution you'd like**
+What you want to happen.
 
-## Proposed Solution
+**API endpoint (if applicable)**
+Link to EODHD API docs for the endpoint: https://eodhd.com/financial-apis/
 
-Describe the feature or API you'd like.
-
-```typescript
-// Example usage
-```
-
-## Alternatives Considered
-
-Any alternative approaches you've considered.
-
-## Additional Context
-
-Links to relevant EODHD API docs, use cases, etc.
+**Additional context**
+Any other context or screenshots.

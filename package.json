@@ -1,15 +1,21 @@
 {
   "name": "eodhd",
   "version": "1.0.0",
+  "type": "module",
   "description": "Official Node.js/TypeScript library for EODHD Financial Data APIs",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
     },
     "./package.json": "./package.json"
   },
@@ -21,9 +27,13 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
+    "lint": "biome check src/ test/",
+    "lint:fix": "biome check --write src/ test/",
+    "format": "biome format --write src/ test/",
     "test": "node --import tsx test/smoke.ts",
     "test:unit": "vitest run",
-    "prepublishOnly": "npm run build"
+    "test:coverage": "vitest run --coverage",
+    "prepublishOnly": "npm run typecheck && npm run test:unit && npm run build"
   },
   "keywords": [
     "eodhd",
@@ -59,8 +69,10 @@
     "access": "public"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.0.6",
     "@types/node": "^25.3.3",
     "@types/ws": "^8.18.1",
+    "@vitest/coverage-v8": "^4.0.18",
     "tsup": "^8.0.0",
     "tsx": "^4.0.0",
     "typescript": "^5.5.0",

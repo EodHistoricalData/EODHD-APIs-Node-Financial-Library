@@ -1,5 +1,10 @@
-import type { HttpClient } from '../http.js';
-import type { MacroIndicatorParams, MacroIndicatorItem, EconomicEventsParams, EconomicEventsResponse } from '../types.js';
+import type { HttpClient } from "../http.js";
+import type {
+  EconomicEventsParams,
+  EconomicEventsResponse,
+  MacroIndicatorItem,
+  MacroIndicatorParams,
+} from "../types.js";
 
 export class MacroApi {
   constructor(private http: HttpClient) {}
@@ -11,6 +16,6 @@ export class MacroApi {
 
   /** Economic events calendar: GET /economic-events */
   async economicEvents(params: EconomicEventsParams = {}): Promise<EconomicEventsResponse> {
-    return this.http.get('/economic-events', params);
+    return this.http.get("/economic-events", params);
   }
 }

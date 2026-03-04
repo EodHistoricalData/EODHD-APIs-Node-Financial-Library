@@ -1,5 +1,5 @@
-import type { HttpClient } from '../http.js';
-import type { TreasuryParams, TreasuryRateItem } from '../types.js';
+import type { HttpClient } from "../http.js";
+import type { TreasuryParams, TreasuryRateItem } from "../types.js";
 
 /**
  * US Treasury rates API for bill rates, yield curves, long-term rates, and real yields.
@@ -26,7 +26,7 @@ export class TreasuryApi {
    * ```
    */
   async billRates(params: TreasuryParams = {}): Promise<TreasuryRateItem[]> {
-    return this.http.get('/ust/bill-rates', params);
+    return this.http.get("/ust/bill-rates", params);
   }
 
   /**
@@ -44,7 +44,7 @@ export class TreasuryApi {
    * ```
    */
   async yieldRates(params: TreasuryParams = {}): Promise<TreasuryRateItem[]> {
-    return this.http.get('/ust/yield-rates', params);
+    return this.http.get("/ust/yield-rates", params);
   }
 
   /**
@@ -62,7 +62,7 @@ export class TreasuryApi {
    * ```
    */
   async longTermRates(params: TreasuryParams = {}): Promise<TreasuryRateItem[]> {
-    return this.http.get('/ust/long-term-rates', params);
+    return this.http.get("/ust/long-term-rates", params);
   }
 
   /**
@@ -80,6 +80,6 @@ export class TreasuryApi {
    * ```
    */
   async realYieldRates(params: TreasuryParams = {}): Promise<TreasuryRateItem[]> {
-    return this.http.get('/ust/real-yield-rates', params);
+    return this.http.get("/ust/real-yield-rates", params);
   }
 }

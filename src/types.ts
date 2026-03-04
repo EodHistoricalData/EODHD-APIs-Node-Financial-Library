@@ -26,9 +26,9 @@ export interface Pagination {
 // ── EOD ──
 
 export interface EodParams extends DateRange {
-  period?: 'd' | 'w' | 'm';
-  order?: 'a' | 'd';
-  filter?: 'last_close' | 'last_volume' | string;
+  period?: "d" | "w" | "m";
+  order?: "a" | "d";
+  filter?: "last_close" | "last_volume" | string;
 }
 
 export interface EodDataPoint {
@@ -44,10 +44,10 @@ export interface EodDataPoint {
 // ── Intraday ──
 
 export interface IntradayParams {
-  interval?: '1m' | '5m' | '1h';
+  interval?: "1m" | "5m" | "1h";
   from?: number | string;
   to?: number | string;
-  'split-dt'?: 0 | 1;
+  "split-dt"?: 0 | 1;
 }
 
 export interface IntradayDataPoint {
@@ -85,8 +85,8 @@ export interface RealTimeQuote {
 
 export interface UsQuoteDelayedParams {
   s?: string;
-  'page[limit]'?: number;
-  'page[offset]'?: number;
+  "page[limit]"?: number;
+  "page[offset]"?: number;
 }
 
 export interface UsQuoteDelayedResult {
@@ -109,7 +109,7 @@ export interface UsQuoteDelayedResult {
 
 export interface BulkEodParams {
   date?: DateString;
-  type?: 'eod' | 'splits' | 'dividends';
+  type?: "eod" | "splits" | "dividends";
   symbols?: string;
   filter?: string;
 }
@@ -205,16 +205,33 @@ export interface ScreenerResponse {
 // ── Technical ──
 
 export type TechnicalFunction =
-  | 'sma' | 'ema' | 'wma' | 'macd' | 'rsi' | 'stochastic' | 'stochrsi'
-  | 'dmi' | 'adx' | 'atr' | 'cci' | 'sar' | 'beta' | 'bbands'
-  | 'volatility' | 'avgvol' | 'avgvolccy' | 'splitadjusted' | 'slope' | 'stddev';
+  | "sma"
+  | "ema"
+  | "wma"
+  | "macd"
+  | "rsi"
+  | "stochastic"
+  | "stochrsi"
+  | "dmi"
+  | "adx"
+  | "atr"
+  | "cci"
+  | "sar"
+  | "beta"
+  | "bbands"
+  | "volatility"
+  | "avgvol"
+  | "avgvolccy"
+  | "splitadjusted"
+  | "slope"
+  | "stddev";
 
 export interface TechnicalParams extends DateRange {
   function: TechnicalFunction;
   period?: number;
-  order?: 'a' | 'd';
+  order?: "a" | "d";
   filter?: string;
-  agg_period?: 'd' | 'w' | 'm';
+  agg_period?: "d" | "w" | "m";
   fast_kperiod?: number;
   slow_kperiod?: number;
   slow_dperiod?: number;
@@ -289,7 +306,7 @@ export interface InsiderTransactionItem {
 export interface SearchParams {
   limit?: number;
   exchange?: string;
-  type?: 'all' | 'stock' | 'etf' | 'fund' | 'bond' | 'index' | 'crypto';
+  type?: "all" | "stock" | "etf" | "fund" | "bond" | "index" | "crypto";
 }
 
 export interface SearchResult {
@@ -307,14 +324,14 @@ export interface SearchResult {
 // ── ID Mapping ──
 
 export interface IdMappingParams {
-  'filter[symbol]'?: string;
-  'filter[isin]'?: string;
-  'filter[cusip]'?: string;
-  'filter[figi]'?: string;
-  'filter[lei]'?: string;
-  'filter[cik]'?: string;
-  'page[limit]'?: number;
-  'page[offset]'?: number;
+  "filter[symbol]"?: string;
+  "filter[isin]"?: string;
+  "filter[cusip]"?: string;
+  "filter[figi]"?: string;
+  "filter[lei]"?: string;
+  "filter[cik]"?: string;
+  "page[limit]"?: number;
+  "page[offset]"?: number;
 }
 
 export interface IdMappingItem {
@@ -372,9 +389,9 @@ export interface SentimentItem {
 
 export interface NewsWordWeightsParams {
   s?: string;
-  'filter[date_from]'?: DateString;
-  'filter[date_to]'?: DateString;
-  'page[limit]'?: number;
+  "filter[date_from]"?: DateString;
+  "filter[date_to]"?: DateString;
+  "page[limit]"?: number;
 }
 
 export interface NewsWordWeight {
@@ -400,12 +417,12 @@ export interface CalendarSplitsParams extends DateRange {
 }
 
 export interface CalendarDividendsParams {
-  'filter[symbol]'?: string;
-  'filter[date_eq]'?: DateString;
-  'filter[date_from]'?: DateString;
-  'filter[date_to]'?: DateString;
-  'page[limit]'?: number;
-  'page[offset]'?: number;
+  "filter[symbol]"?: string;
+  "filter[date_eq]"?: DateString;
+  "filter[date_from]"?: DateString;
+  "filter[date_to]"?: DateString;
+  "page[limit]"?: number;
+  "page[offset]"?: number;
 }
 
 export interface CalendarEarningsItem {
@@ -516,7 +533,7 @@ export interface CalendarDividendsData {
 
 export interface EconomicEventsParams extends DateRange, Pagination {
   country?: string;
-  comparison?: 'mom' | 'qoq' | 'yoy';
+  comparison?: "mom" | "qoq" | "yoy";
   type?: string;
 }
 
@@ -620,9 +637,9 @@ export interface TreasuryRateItem {
 // ── CBOE ──
 
 export interface CboeIndexParams {
-  'filter[index_code]': string;
-  'filter[feed_type]': string;
-  'filter[date]': DateString;
+  "filter[index_code]": string;
+  "filter[feed_type]": string;
+  "filter[date]": DateString;
 }
 
 export interface CboeIndexItem {
@@ -661,32 +678,32 @@ export interface UserData {
 // ── Marketplace: Unicorn Bay Options ──
 
 export interface OptionsContractsParams {
-  'filter[underlying_symbol]'?: string;
-  'filter[contract]'?: string;
-  'filter[exp_date_eq]'?: DateString;
-  'filter[exp_date_from]'?: DateString;
-  'filter[exp_date_to]'?: DateString;
-  'filter[tradetime_eq]'?: DateString;
-  'filter[tradetime_from]'?: DateString;
-  'filter[tradetime_to]'?: DateString;
-  'filter[type]'?: 'put' | 'call';
-  'filter[strike_eq]'?: number;
-  'filter[strike_from]'?: number;
-  'filter[strike_to]'?: number;
+  "filter[underlying_symbol]"?: string;
+  "filter[contract]"?: string;
+  "filter[exp_date_eq]"?: DateString;
+  "filter[exp_date_from]"?: DateString;
+  "filter[exp_date_to]"?: DateString;
+  "filter[tradetime_eq]"?: DateString;
+  "filter[tradetime_from]"?: DateString;
+  "filter[tradetime_to]"?: DateString;
+  "filter[type]"?: "put" | "call";
+  "filter[strike_eq]"?: number;
+  "filter[strike_from]"?: number;
+  "filter[strike_to]"?: number;
   sort?: string;
-  'page[offset]'?: number;
-  'page[limit]'?: number;
-  'fields[options-contracts]'?: string;
+  "page[offset]"?: number;
+  "page[limit]"?: number;
+  "fields[options-contracts]"?: string;
 }
 
 export interface OptionsEodParams extends OptionsContractsParams {
   compact?: 0 | 1;
-  'fields[options-eod]'?: string;
+  "fields[options-eod]"?: string;
 }
 
 export interface OptionsUnderlyingSymbolsParams {
-  'page[offset]'?: number;
-  'page[limit]'?: number;
+  "page[offset]"?: number;
+  "page[limit]"?: number;
 }
 
 export interface OptionsContract {
@@ -790,15 +807,15 @@ export interface MarketplaceTickDataPoint {
 
 // ── Marketplace: Trading Hours ──
 
-export interface TradingHoursMarketsParams {}
+export type TradingHoursMarketsParams = {};
 
 export interface TradingHoursDetailsParams {
   market?: string;
 }
 
 export interface TradingHoursLookupParams {
-  'filter[symbol]'?: string;
-  'filter[exchange]'?: string;
+  "filter[symbol]"?: string;
+  "filter[exchange]"?: string;
 }
 
 export interface TradingHoursStatusParams {
@@ -892,7 +909,7 @@ export interface PraamsReportResult {
 
 export interface EsgCompanyParams {
   year?: number;
-  frequency?: 'FY' | 'Q1' | 'Q2' | 'Q3' | 'Q4';
+  frequency?: "FY" | "Q1" | "Q2" | "Q3" | "Q4";
 }
 
 export interface EsgCompanyItem {
@@ -919,7 +936,7 @@ export interface EsgData {
 
 // ── WebSocket ──
 
-export type WebSocketFeed = 'us' | 'us-quote' | 'forex' | 'crypto';
+export type WebSocketFeed = "us" | "us-quote" | "forex" | "crypto";
 
 export interface WebSocketOptions {
   maxReconnectAttempts?: number;

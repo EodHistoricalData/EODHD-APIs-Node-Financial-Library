@@ -1,5 +1,5 @@
-import type { HttpClient } from '../http.js';
-import type { CboeIndexParams, CboeIndexItem, CboeIndexData } from '../types.js';
+import type { HttpClient } from "../http.js";
+import type { CboeIndexData, CboeIndexItem, CboeIndexParams } from "../types.js";
 
 /**
  * CBOE Europe indices API for index listings and historical data.
@@ -25,7 +25,7 @@ export class CboeApi {
    * ```
    */
   async indices(): Promise<CboeIndexItem[]> {
-    return this.http.get('/cboe/indices');
+    return this.http.get("/cboe/indices");
   }
 
   /**
@@ -47,6 +47,6 @@ export class CboeApi {
    * ```
    */
   async index(params: CboeIndexParams): Promise<CboeIndexData> {
-    return this.http.get('/cboe/index', params);
+    return this.http.get("/cboe/index", params);
   }
 }
