@@ -1,50 +1,71 @@
-import { HttpClient } from './http.js';
-import { EODHDWebSocket } from './websocket.js';
-import { type Logger, resolveLogger } from './logger.js';
-import { DEFAULT_RETRY } from './retry.js';
-import type {
-  Ticker, EodParams, EodDataPoint, IntradayParams, IntradayDataPoint,
-  RealTimeQuote, RealTimeParams, UsQuoteDelayedParams, UsQuoteDelayedResult,
-  BulkEodParams, BulkEodDataPoint,
-  DividendDataPoint, SplitDataPoint, HistoricalMarketCapPoint,
-  TicksParams, TickDataPoint,
-  FundamentalsParams, FundamentalsData,
-  BulkFundamentalsParams, BulkFundamentalsItem,
-  CalendarEarningsParams, CalendarTrendsParams, CalendarIposParams,
-  CalendarSplitsParams, CalendarDividendsParams,
-  NewsParams, NewsArticle, SentimentsParams, SentimentItem,
-  NewsWordWeightsParams, NewsWordWeight,
-  ExchangeSymbolsParams, ExchangeDetailsParams, Exchange,
-  MacroIndicatorParams, MacroIndicatorItem,
-  EconomicEventsParams, EconomicEventsResponse,
-  TreasuryParams, CboeIndexParams,
-  ScreenerParams, ScreenerResponse, SearchParams, SearchResult,
-  IdMappingParams, IdMappingItem,
-  TechnicalParams, TechnicalDataPoint,
-  InsiderTransactionsParams, InsiderTransactionItem,
-  DateRange,
-  UserData,
-  WebSocketFeed, WebSocketOptions,
-} from './types.js';
-
+import { CalendarApi } from "./api/calendar.js";
+import { CboeApi } from "./api/cboe.js";
+import { CorporateApi } from "./api/corporate.js";
 // API modules
-import { EodApi } from './api/eod.js';
-import { FundamentalsApi } from './api/fundamentals.js';
-import { CalendarApi } from './api/calendar.js';
-import { NewsApi } from './api/news.js';
-import { ExchangesApi } from './api/exchanges.js';
-import { MacroApi } from './api/macro.js';
-import { TreasuryApi } from './api/treasury.js';
-import { CboeApi } from './api/cboe.js';
-import { ScreeningApi } from './api/screening.js';
-import { CorporateApi } from './api/corporate.js';
-import { UserApi } from './api/user.js';
+import { EodApi } from "./api/eod.js";
+import { ExchangesApi } from "./api/exchanges.js";
+import { FundamentalsApi } from "./api/fundamentals.js";
+import { MacroApi } from "./api/macro.js";
+import { NewsApi } from "./api/news.js";
+import { ScreeningApi } from "./api/screening.js";
+import { TreasuryApi } from "./api/treasury.js";
+import { UserApi } from "./api/user.js";
+import { HttpClient } from "./http.js";
+import { type Logger, resolveLogger } from "./logger.js";
+import { InvestVerteApi } from "./marketplace/investverte.js";
+import { PraamsApi } from "./marketplace/praams.js";
+import { TradingHoursApi } from "./marketplace/tradinghours.js";
 
 // Marketplace modules
-import { UnicornBayApi } from './marketplace/unicornbay.js';
-import { TradingHoursApi } from './marketplace/tradinghours.js';
-import { PraamsApi } from './marketplace/praams.js';
-import { InvestVerteApi } from './marketplace/investverte.js';
+import { UnicornBayApi } from "./marketplace/unicornbay.js";
+import { DEFAULT_RETRY } from "./retry.js";
+import type {
+  BulkEodDataPoint,
+  BulkEodParams,
+  BulkFundamentalsItem,
+  BulkFundamentalsParams,
+  DateRange,
+  DividendDataPoint,
+  EconomicEventsParams,
+  EconomicEventsResponse,
+  EodDataPoint,
+  EodParams,
+  FundamentalsData,
+  FundamentalsParams,
+  HistoricalMarketCapPoint,
+  IdMappingItem,
+  IdMappingParams,
+  InsiderTransactionItem,
+  InsiderTransactionsParams,
+  IntradayDataPoint,
+  IntradayParams,
+  MacroIndicatorItem,
+  MacroIndicatorParams,
+  NewsArticle,
+  NewsParams,
+  NewsWordWeight,
+  NewsWordWeightsParams,
+  RealTimeParams,
+  RealTimeQuote,
+  ScreenerParams,
+  ScreenerResponse,
+  SearchParams,
+  SearchResult,
+  SentimentItem,
+  SentimentsParams,
+  SplitDataPoint,
+  TechnicalDataPoint,
+  TechnicalParams,
+  TickDataPoint,
+  Ticker,
+  TicksParams,
+  UserData,
+  UsQuoteDelayedParams,
+  UsQuoteDelayedResult,
+  WebSocketFeed,
+  WebSocketOptions,
+} from "./types.js";
+import { EODHDWebSocket } from "./websocket.js";
 
 export interface EODHDClientOptions {
   /** Your EODHD API token (falls back to EODHD_API_TOKEN env var) */
@@ -173,20 +194,23 @@ export class EODHDClient {
    * ```
    */
   constructor(options: EODHDClientOptions) {
-    const envToken = typeof process !== 'undefined' ? process.env?.EODHD_API_TOKEN?.trim() : undefined;
-    const resolved = options.apiToken?.trim() || envToken || '';
+    const envToken = typeof process !== "undefined" ? process.env?.EODHD_API_TOKEN?.trim() : undefined;
+    const resolved = options.apiToken?.trim() || envToken || "";
     if (!resolved) {
       throw new Error(
-        'apiToken is required. Pass it to EODHDClient({ apiToken }) or set EODHD_API_TOKEN environment variable.',
+        "apiToken is required. Pass it to EODHDClient({ apiToken }) or set EODHD_API_TOKEN environment variable.",
       );
     }
     this.apiToken = resolved;
     this.http = new HttpClient({
       apiToken: resolved,
-      baseUrl: options.baseUrl ?? 'https://eodhd.com/api/',
+      baseUrl: options.baseUrl ?? "https://eodhd.com/api/",
       timeout: options.timeout ?? 30_000,
       logger: resolveLogger(options.logger),
-      retryOptions: { ...DEFAULT_RETRY, ...(options.maxRetries !== undefined ? { maxRetries: options.maxRetries } : {}) },
+      retryOptions: {
+        ...DEFAULT_RETRY,
+        ...(options.maxRetries !== undefined ? { maxRetries: options.maxRetries } : {}),
+      },
     });
 
     // Core API

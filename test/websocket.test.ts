@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { EODHDWebSocket } from '../src/websocket.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { EODHDWebSocket } from "../src/websocket.js";
 
 // ---------------------------------------------------------------------------
 // Mock WebSocket — tracks all instances created
@@ -61,12 +61,12 @@ function latestWs(): MockWebSocket {
 // Test suite
 // ---------------------------------------------------------------------------
 
-describe('EODHDWebSocket', () => {
+describe("EODHDWebSocket", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     instances.length = 0;
     // Stub globalThis.WebSocket with our mock class
-    vi.stubGlobal('WebSocket', MockWebSocket);
+    vi.stubGlobal("WebSocket", MockWebSocket);
   });
 
   afterEach(() => {
@@ -75,36 +75,36 @@ describe('EODHDWebSocket', () => {
   });
 
   function createWs(
-    symbols: string[] = ['AAPL', 'MSFT'],
+    symbols: string[] = ["AAPL", "MSFT"],
     options: { maxReconnectAttempts?: number; reconnectInterval?: number } = {},
   ) {
-    return new EODHDWebSocket('test-token', 'us', symbols, options);
+    return new EODHDWebSocket("test-token", "us", symbols, options);
   }
 
   // ─── 1. Subscribes on connect ───────────────────────────────────────────
 
-  it('sends subscribe message on connect', () => {
-    const ws = createWs(['AAPL', 'MSFT']);
+  it("sends subscribe message on connect", () => {
+    const ws = createWs(["AAPL", "MSFT"]);
     ws.connect();
     const mock = latestWs();
     mock.simulateOpen();
 
     expect(mock.sent).toHaveLength(1);
     const msg = JSON.parse(mock.sent[0]);
-    expect(msg).toEqual({ action: 'subscribe', symbols: 'AAPL,MSFT' });
+    expect(msg).toEqual({ action: "subscribe", symbols: "AAPL,MSFT" });
   });
 
   // ─── 2. Emits data events on message ────────────────────────────────────
 
-  it('emits data events on message', () => {
+  it("emits data events on message", () => {
     const ws = createWs();
     const handler = vi.fn();
-    ws.on('data', handler);
+    ws.on("data", handler);
     ws.connect();
     const mock = latestWs();
     mock.simulateOpen();
 
-    const tick = { s: 'AAPL', p: 150.5, v: 100, t: 1234567890 };
+    const tick = { s: "AAPL", p: 150.5, v: 100, t: 1234567890 };
     mock.simulateMessage(tick);
 
     expect(handler).toHaveBeenCalledWith(tick);
@@ -112,59 +112,59 @@ describe('EODHDWebSocket', () => {
 
   // ─── 3. Emits error on JSON parse failure ───────────────────────────────
 
-  it('emits error event on JSON parse failure', () => {
+  it("emits error event on JSON parse failure", () => {
     const ws = createWs();
     const errorHandler = vi.fn();
-    ws.on('error', errorHandler);
+    ws.on("error", errorHandler);
     ws.connect();
     const mock = latestWs();
     mock.simulateOpen();
 
-    mock.simulateRawMessage('not-valid-json{{{');
+    mock.simulateRawMessage("not-valid-json{{{");
 
     expect(errorHandler).toHaveBeenCalledTimes(1);
     expect(errorHandler.mock.calls[0][0]).toBeInstanceOf(Error);
-    expect(errorHandler.mock.calls[0][0].message).toContain('parse');
+    expect(errorHandler.mock.calls[0][0].message).toContain("parse");
   });
 
   // ─── 4. subscribe() sends subscribe message post-connect ────────────────
 
-  it('subscribe() sends subscribe message on open connection', () => {
-    const ws = createWs(['AAPL']);
+  it("subscribe() sends subscribe message on open connection", () => {
+    const ws = createWs(["AAPL"]);
     ws.connect();
     const mock = latestWs();
     mock.simulateOpen();
     mock.sent = []; // clear initial subscribe
 
-    ws.subscribe(['GOOG', 'TSLA']);
+    ws.subscribe(["GOOG", "TSLA"]);
 
     expect(mock.sent).toHaveLength(1);
     const msg = JSON.parse(mock.sent[0]);
-    expect(msg).toEqual({ action: 'subscribe', symbols: 'GOOG,TSLA' });
+    expect(msg).toEqual({ action: "subscribe", symbols: "GOOG,TSLA" });
   });
 
   // ─── 5. unsubscribe() sends unsubscribe message ────────────────────────
 
-  it('unsubscribe() sends unsubscribe message', () => {
-    const ws = createWs(['AAPL', 'MSFT']);
+  it("unsubscribe() sends unsubscribe message", () => {
+    const ws = createWs(["AAPL", "MSFT"]);
     ws.connect();
     const mock = latestWs();
     mock.simulateOpen();
     mock.sent = [];
 
-    ws.unsubscribe(['AAPL']);
+    ws.unsubscribe(["AAPL"]);
 
     expect(mock.sent).toHaveLength(1);
     const msg = JSON.parse(mock.sent[0]);
-    expect(msg).toEqual({ action: 'unsubscribe', symbols: 'AAPL' });
+    expect(msg).toEqual({ action: "unsubscribe", symbols: "AAPL" });
   });
 
   // ─── 6. Does not fire close listeners during reconnect ──────────────────
 
-  it('does not fire close listeners during reconnect', () => {
-    const ws = createWs(['AAPL'], { maxReconnectAttempts: 3, reconnectInterval: 1000 });
+  it("does not fire close listeners during reconnect", () => {
+    const ws = createWs(["AAPL"], { maxReconnectAttempts: 3, reconnectInterval: 1000 });
     const closeHandler = vi.fn();
-    ws.on('close', closeHandler);
+    ws.on("close", closeHandler);
     ws.connect();
     latestWs().simulateOpen();
 
@@ -174,10 +174,10 @@ describe('EODHDWebSocket', () => {
     expect(closeHandler).not.toHaveBeenCalled();
   });
 
-  it('fires close listeners when user calls close()', () => {
-    const ws = createWs(['AAPL'], { maxReconnectAttempts: 3 });
+  it("fires close listeners when user calls close()", () => {
+    const ws = createWs(["AAPL"], { maxReconnectAttempts: 3 });
     const closeHandler = vi.fn();
-    ws.on('close', closeHandler);
+    ws.on("close", closeHandler);
     ws.connect();
     latestWs().simulateOpen();
 
@@ -186,12 +186,12 @@ describe('EODHDWebSocket', () => {
     expect(closeHandler).toHaveBeenCalledTimes(1);
   });
 
-  it('fires close listeners after reconnect exhausted', () => {
-    const ws = createWs(['AAPL'], { maxReconnectAttempts: 2, reconnectInterval: 100 });
+  it("fires close listeners after reconnect exhausted", () => {
+    const ws = createWs(["AAPL"], { maxReconnectAttempts: 2, reconnectInterval: 100 });
     const closeHandler = vi.fn();
     const reconnectFailedHandler = vi.fn();
-    ws.on('close', closeHandler);
-    ws.on('reconnectFailed', reconnectFailedHandler);
+    ws.on("close", closeHandler);
+    ws.on("reconnectFailed", reconnectFailedHandler);
     ws.connect();
     latestWs().simulateOpen();
 
@@ -214,10 +214,10 @@ describe('EODHDWebSocket', () => {
 
   // ─── 7. Emits reconnectFailed after max attempts exhausted ──────────────
 
-  it('emits reconnectFailed after max attempts exhausted', () => {
-    const ws = createWs(['AAPL'], { maxReconnectAttempts: 1, reconnectInterval: 100 });
+  it("emits reconnectFailed after max attempts exhausted", () => {
+    const ws = createWs(["AAPL"], { maxReconnectAttempts: 1, reconnectInterval: 100 });
     const reconnectHandler = vi.fn();
-    ws.on('reconnectFailed', reconnectHandler);
+    ws.on("reconnectFailed", reconnectHandler);
     ws.connect();
     latestWs().simulateOpen();
 
@@ -234,29 +234,29 @@ describe('EODHDWebSocket', () => {
 
   // ─── 8. Skips status messages ───────────────────────────────────────────
 
-  it('skips messages with status_code property', () => {
+  it("skips messages with status_code property", () => {
     const ws = createWs();
     const handler = vi.fn();
-    ws.on('data', handler);
+    ws.on("data", handler);
     ws.connect();
     latestWs().simulateOpen();
 
-    latestWs().simulateMessage({ status_code: 200, message: 'connected' });
+    latestWs().simulateMessage({ status_code: 200, message: "connected" });
 
     expect(handler).not.toHaveBeenCalled();
   });
 
   // ─── Additional: multiple data listeners ────────────────────────────────
 
-  it('supports multiple data listeners', () => {
+  it("supports multiple data listeners", () => {
     const ws = createWs();
     const h1 = vi.fn();
     const h2 = vi.fn();
-    ws.on('data', h1).on('data', h2);
+    ws.on("data", h1).on("data", h2);
     ws.connect();
     latestWs().simulateOpen();
 
-    latestWs().simulateMessage({ s: 'AAPL', p: 100, t: 1 });
+    latestWs().simulateMessage({ s: "AAPL", p: 100, t: 1 });
 
     expect(h1).toHaveBeenCalledTimes(1);
     expect(h2).toHaveBeenCalledTimes(1);
@@ -264,7 +264,7 @@ describe('EODHDWebSocket', () => {
 
   // ─── Empty symbols array does not send subscribe ────────────────────────
 
-  it('does not send subscribe if symbols array is empty', () => {
+  it("does not send subscribe if symbols array is empty", () => {
     const ws = createWs([]);
     ws.connect();
     latestWs().simulateOpen();
@@ -274,10 +274,10 @@ describe('EODHDWebSocket', () => {
 
   // ─── Reconnect resets attempt counter on successful connect ─────────────
 
-  it('resets reconnect counter on successful reconnect', () => {
-    const ws = createWs(['AAPL'], { maxReconnectAttempts: 2, reconnectInterval: 100 });
+  it("resets reconnect counter on successful reconnect", () => {
+    const ws = createWs(["AAPL"], { maxReconnectAttempts: 2, reconnectInterval: 100 });
     const reconnectHandler = vi.fn();
-    ws.on('reconnectFailed', reconnectHandler);
+    ws.on("reconnectFailed", reconnectHandler);
     ws.connect();
     latestWs().simulateOpen();
 

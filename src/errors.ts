@@ -1,28 +1,28 @@
 export type ErrorCode =
-  | 'auth_error'
-  | 'rate_limit'
-  | 'network_error'
-  | 'timeout'
-  | 'server_error'
-  | 'client_error'
-  | 'parse_error'
-  | 'unknown';
+  | "auth_error"
+  | "rate_limit"
+  | "network_error"
+  | "timeout"
+  | "server_error"
+  | "client_error"
+  | "parse_error"
+  | "unknown";
 
 const RETRYABLE_STATUS_CODES = new Set([408, 429, 500, 502, 503, 504]);
 
 export class EODHDError extends Error {
-  override readonly name: string = 'EODHDError';
+  override readonly name: string = "EODHDError";
 
   constructor(
     message: string,
     readonly statusCode: number,
-    readonly code: ErrorCode = 'unknown',
+    readonly code: ErrorCode = "unknown",
     readonly requestId?: string,
     readonly responseBody?: unknown,
   ) {
     super(`EODHD API Error (${statusCode}): ${message}`);
     // Ensure stack trace points to call site, not error constructor
-    if (typeof Error.captureStackTrace === 'function') {
+    if (typeof Error.captureStackTrace === "function") {
       Error.captureStackTrace(this, this.constructor);
     }
   }
@@ -33,15 +33,15 @@ export class EODHDError extends Error {
 }
 
 export class EODHDAuthError extends EODHDError {
-  override readonly name = 'EODHDAuthError';
+  override readonly name = "EODHDAuthError";
 
   constructor(message: string, statusCode: number = 401, requestId?: string, responseBody?: unknown) {
-    super(message, statusCode, 'auth_error', requestId, responseBody);
+    super(message, statusCode, "auth_error", requestId, responseBody);
   }
 }
 
 export class EODHDRateLimitError extends EODHDError {
-  override readonly name = 'EODHDRateLimitError';
+  override readonly name = "EODHDRateLimitError";
 
   constructor(
     message: string,
@@ -49,15 +49,15 @@ export class EODHDRateLimitError extends EODHDError {
     requestId?: string,
     responseBody?: unknown,
   ) {
-    super(message, 429, 'rate_limit', requestId, responseBody);
+    super(message, 429, "rate_limit", requestId, responseBody);
   }
 }
 
 export class EODHDNetworkError extends EODHDError {
-  override readonly name = 'EODHDNetworkError';
+  override readonly name = "EODHDNetworkError";
 
   constructor(message: string) {
-    super(message, 0, 'network_error');
+    super(message, 0, "network_error");
   }
 
   override get retryable(): boolean {
@@ -66,10 +66,10 @@ export class EODHDNetworkError extends EODHDError {
 }
 
 export class EODHDTimeoutError extends EODHDError {
-  override readonly name = 'EODHDTimeoutError';
+  override readonly name = "EODHDTimeoutError";
 
   constructor(message: string) {
-    super(message, 0, 'timeout');
+    super(message, 0, "timeout");
   }
 
   override get retryable(): boolean {

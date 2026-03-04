@@ -1,8 +1,15 @@
-import type { HttpClient } from '../http.js';
+import type { HttpClient } from "../http.js";
 import type {
-  Ticker, PraamsExploreParams, PraamsExploreEquityBody, PraamsExploreBondBody,
-  PraamsAnalysisResult, PraamsBankStatementResult, PraamsExploreResult, PraamsReportParams, PraamsReportResult,
-} from '../types.js';
+  PraamsAnalysisResult,
+  PraamsBankStatementResult,
+  PraamsExploreBondBody,
+  PraamsExploreEquityBody,
+  PraamsExploreParams,
+  PraamsExploreResult,
+  PraamsReportParams,
+  PraamsReportResult,
+  Ticker,
+} from "../types.js";
 
 export class PraamsApi {
   constructor(private http: HttpClient) {}
@@ -49,13 +56,16 @@ export class PraamsApi {
   // ── Smart Screeners ──
 
   /** Smart equity screener: POST /mp/praams/explore/equity */
-  async exploreEquity(params: PraamsExploreParams = {}, body: PraamsExploreEquityBody = {}): Promise<PraamsExploreResult> {
-    return this.http.post('/mp/praams/explore/equity', params, body);
+  async exploreEquity(
+    params: PraamsExploreParams = {},
+    body: PraamsExploreEquityBody = {},
+  ): Promise<PraamsExploreResult> {
+    return this.http.post("/mp/praams/explore/equity", params, body);
   }
 
   /** Smart bond screener: POST /mp/praams/explore/bond */
   async exploreBond(params: PraamsExploreParams = {}, body: PraamsExploreBondBody = {}): Promise<PraamsExploreResult> {
-    return this.http.post('/mp/praams/explore/bond', params, body);
+    return this.http.post("/mp/praams/explore/bond", params, body);
   }
 
   // ── Reports ──

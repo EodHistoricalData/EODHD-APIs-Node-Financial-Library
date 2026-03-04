@@ -1,15 +1,9 @@
-import {
-  EODHDError,
-  EODHDAuthError,
-  EODHDRateLimitError,
-  EODHDNetworkError,
-  EODHDTimeoutError,
-} from './errors.js';
-import { type Logger, NO_OP_LOGGER, redactUrl } from './logger.js';
-import { type RetryOptions, DEFAULT_RETRY, calculateDelay, sleep } from './retry.js';
-import type { RateLimitInfo } from './types.js';
+import { EODHDAuthError, EODHDError, EODHDNetworkError, EODHDRateLimitError, EODHDTimeoutError } from "./errors.js";
+import { type Logger, NO_OP_LOGGER, redactUrl } from "./logger.js";
+import { calculateDelay, DEFAULT_RETRY, type RetryOptions, sleep } from "./retry.js";
+import type { RateLimitInfo } from "./types.js";
 
-export type { ErrorCode } from './errors.js';
+export type { ErrorCode } from "./errors.js";
 export { EODHDError, EODHDAuthError, EODHDRateLimitError, EODHDNetworkError, EODHDTimeoutError };
 
 export interface HttpClientConfig {
@@ -33,15 +27,15 @@ export class HttpClient {
   }
 
   async get<T = unknown>(path: string, params: Params = {}): Promise<T> {
-    return this.requestWithRetry<T>('GET', path, { ...params, fmt: 'json' });
+    return this.requestWithRetry<T>("GET", path, { ...params, fmt: "json" });
   }
 
   async getBuffer(path: string, params: Params = {}): Promise<ArrayBuffer> {
-    return this.requestWithRetry<ArrayBuffer>('GET', path, params, undefined, true);
+    return this.requestWithRetry<ArrayBuffer>("GET", path, params, undefined, true);
   }
 
   async post<T = unknown>(path: string, params: Params = {}, body: unknown = {}): Promise<T> {
-    return this.requestWithRetry<T>('POST', path, { ...params, fmt: 'json' }, body);
+    return this.requestWithRetry<T>("POST", path, { ...params, fmt: "json" }, body);
   }
 
   private async requestWithRetry<T>(
@@ -56,7 +50,7 @@ export class HttpClient {
     let lastError: Error | undefined;
 
     for (let attempt = 0; attempt <= this.retryOptions.maxRetries; attempt++) {
-      this.logger.debug(`${method} ${redacted}${attempt > 0 ? ` (attempt ${attempt + 1})` : ''}`);
+      this.logger.debug(`${method} ${redacted}${attempt > 0 ? ` (attempt ${attempt + 1})` : ""}`);
       const start = Date.now();
 
       try {
@@ -65,7 +59,7 @@ export class HttpClient {
           signal: AbortSignal.timeout(this.config.timeout),
         };
         if (body !== undefined) {
-          fetchOptions.headers = { 'Content-Type': 'application/json' };
+          fetchOptions.headers = { "Content-Type": "application/json" };
           fetchOptions.body = JSON.stringify(body);
         }
 
@@ -86,12 +80,12 @@ export class HttpClient {
           return response.arrayBuffer() as Promise<T>;
         }
         try {
-          return await response.json() as T;
+          return (await response.json()) as T;
         } catch (parseErr) {
           throw new EODHDError(
             `Failed to parse response as JSON: ${parseErr instanceof Error ? parseErr.message : parseErr}`,
             response.status,
-            'parse_error',
+            "parse_error",
           );
         }
       } catch (error) {
@@ -118,8 +112,8 @@ export class HttpClient {
 
   private buildUrl(path: string, params: Params): URL {
     // Strip leading slash to properly append to base URL
-    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-    const base = this.config.baseUrl.endsWith('/') ? this.config.baseUrl : this.config.baseUrl + '/';
+    const cleanPath = path.startsWith("/") ? path.slice(1) : path;
+    const base = this.config.baseUrl.endsWith("/") ? this.config.baseUrl : `${this.config.baseUrl}/`;
     const url = new URL(cleanPath, base);
     for (const [key, value] of Object.entries(params)) {
       if (value !== undefined && value !== null) {
@@ -135,32 +129,36 @@ export class HttpClient {
     try {
       const text = await response.text();
       message = text || response.statusText;
-      try { responseBody = JSON.parse(text); } catch { responseBody = text || undefined; }
+      try {
+        responseBody = JSON.parse(text);
+      } catch {
+        responseBody = text || undefined;
+      }
     } catch {
       message = response.statusText;
     }
 
     const status = response.status;
-    const requestId = response.headers.get('X-Request-Id') ?? undefined;
+    const requestId = response.headers.get("X-Request-Id") ?? undefined;
 
     if (status === 401 || status === 403) {
       throw new EODHDAuthError(message, status, requestId, responseBody);
     }
 
     if (status === 429) {
-      const retryAfter = parseRetryAfter(response.headers.get('Retry-After'));
+      const retryAfter = parseRetryAfter(response.headers.get("Retry-After"));
       throw new EODHDRateLimitError(message, retryAfter, requestId, responseBody);
     }
 
-    const code = status >= 500 ? 'server_error' : 'client_error';
+    const code = status >= 500 ? "server_error" : "client_error";
     throw new EODHDError(message, status, code, requestId, responseBody);
   }
 }
 
 function parseRateLimitHeaders(headers: Headers): RateLimitInfo | undefined {
-  const limit = headers.get('X-RateLimit-Limit');
-  const remaining = headers.get('X-RateLimit-Remaining');
-  const reset = headers.get('X-RateLimit-Reset');
+  const limit = headers.get("X-RateLimit-Limit");
+  const remaining = headers.get("X-RateLimit-Remaining");
+  const reset = headers.get("X-RateLimit-Reset");
   if (!limit && !remaining && !reset) return undefined;
   return {
     limit: limit ? Number(limit) : undefined,
@@ -183,15 +181,15 @@ function parseRetryAfter(header: string | null): number | undefined {
 }
 
 function wrapFetchError(err: unknown): EODHDError {
-  if (err instanceof DOMException && err.name === 'AbortError') {
-    return new EODHDTimeoutError('Request timed out');
+  if (err instanceof DOMException && err.name === "AbortError") {
+    return new EODHDTimeoutError("Request timed out");
   }
-  if (err instanceof TypeError && err.name === 'TimeoutError') {
-    return new EODHDTimeoutError('Request timed out');
+  if (err instanceof TypeError && err.name === "TimeoutError") {
+    return new EODHDTimeoutError("Request timed out");
   }
   // Node 18+ AbortSignal.timeout throws with name "TimeoutError"
-  if (err instanceof DOMException && err.name === 'TimeoutError') {
-    return new EODHDTimeoutError('Request timed out');
+  if (err instanceof DOMException && err.name === "TimeoutError") {
+    return new EODHDTimeoutError("Request timed out");
   }
   const message = err instanceof Error ? err.message : String(err);
   return new EODHDNetworkError(message);

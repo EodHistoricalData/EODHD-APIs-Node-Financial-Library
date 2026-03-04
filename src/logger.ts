@@ -16,10 +16,10 @@ export function createConsoleLogger(): Logger {
 
 export function resolveLogger(logger?: Logger): Logger {
   if (logger) return logger;
-  if (typeof process !== 'undefined' && process.env?.EODHD_LOG === 'debug') return createConsoleLogger();
+  if (typeof process !== "undefined" && process.env?.EODHD_LOG === "debug") return createConsoleLogger();
   return NO_OP_LOGGER;
 }
 
 export function redactUrl(url: string): string {
-  return url.replace(/api_token=[^&]+/, 'api_token=***');
+  return url.replace(/api_token=[^&]+/, "api_token=***");
 }

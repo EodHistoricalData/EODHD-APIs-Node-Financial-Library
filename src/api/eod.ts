@@ -1,11 +1,23 @@
-import type { HttpClient } from '../http.js';
+import type { HttpClient } from "../http.js";
 import type {
-  Ticker, DateRange, EodParams, EodDataPoint, IntradayParams, IntradayDataPoint,
-  RealTimeQuote, RealTimeParams, UsQuoteDelayedParams, UsQuoteDelayedResult,
-  BulkEodParams, BulkEodDataPoint,
-  DividendDataPoint, SplitDataPoint, HistoricalMarketCapPoint,
-  TicksParams, TickDataPoint,
-} from '../types.js';
+  BulkEodDataPoint,
+  BulkEodParams,
+  DateRange,
+  DividendDataPoint,
+  EodDataPoint,
+  EodParams,
+  HistoricalMarketCapPoint,
+  IntradayDataPoint,
+  IntradayParams,
+  RealTimeParams,
+  RealTimeQuote,
+  SplitDataPoint,
+  TickDataPoint,
+  Ticker,
+  TicksParams,
+  UsQuoteDelayedParams,
+  UsQuoteDelayedResult,
+} from "../types.js";
 
 export class EodApi {
   constructor(private http: HttpClient) {}
@@ -27,7 +39,7 @@ export class EodApi {
 
   /** US extended delayed quotes: GET /us-quote-delayed */
   async usQuoteDelayed(params: UsQuoteDelayedParams = {}): Promise<UsQuoteDelayedResult[]> {
-    return this.http.get('/us-quote-delayed', params);
+    return this.http.get("/us-quote-delayed", params);
   }
 
   /** Bulk EOD data for exchange: GET /eod-bulk-last-day/{exchange} */
@@ -52,6 +64,6 @@ export class EodApi {
 
   /** US stock market tick data: GET /ticks */
   async ticks(params: TicksParams = {}): Promise<TickDataPoint[]> {
-    return this.http.get('/ticks', params);
+    return this.http.get("/ticks", params);
   }
 }
