@@ -1,22 +1,22 @@
-import type { HttpClient } from '../http.js';
-import type { EsgCompanyParams, EsgCompanyItem, EsgCountryItem, EsgSectorItem, EsgData } from '../types.js';
+import type { HttpClient } from "../http.js";
+import type { EsgCompanyItem, EsgCompanyParams, EsgCountryItem, EsgData, EsgSectorItem } from "../types.js";
 
 export class InvestVerteApi {
   constructor(private http: HttpClient) {}
 
   /** ESG companies list: GET /mp/investverte/companies */
   async companies(): Promise<EsgCompanyItem[]> {
-    return this.http.get('/mp/investverte/companies');
+    return this.http.get("/mp/investverte/companies");
   }
 
   /** ESG countries list: GET /mp/investverte/countries */
   async countries(): Promise<EsgCountryItem[]> {
-    return this.http.get('/mp/investverte/countries');
+    return this.http.get("/mp/investverte/countries");
   }
 
   /** ESG sectors list: GET /mp/investverte/sectors */
   async sectors(): Promise<EsgSectorItem[]> {
-    return this.http.get('/mp/investverte/sectors');
+    return this.http.get("/mp/investverte/sectors");
   }
 
   /** Company ESG data: GET /mp/investverte/esg/{symbol} */

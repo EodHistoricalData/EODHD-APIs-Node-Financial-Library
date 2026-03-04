@@ -1,11 +1,11 @@
-import { calculateDelay } from './retry.js';
-import { redactUrl } from './logger.js';
-import type { WebSocketFeed, WebSocketOptions, WebSocketTick } from './types.js';
+import { redactUrl } from "./logger.js";
+import { calculateDelay } from "./retry.js";
+import type { WebSocketFeed, WebSocketOptions, WebSocketTick } from "./types.js";
 
 type WebSocketListener = (data: WebSocketTick) => void;
 type ErrorListener = (error: Error) => void;
 
-const WS_BASE_URL = 'wss://ws.eodhistoricaldata.com/ws';
+const WS_BASE_URL = "wss://ws.eodhistoricaldata.com/ws";
 
 /**
  * Real-time WebSocket client for streaming market data from EODHD.
@@ -38,7 +38,6 @@ export class EODHDWebSocket {
   private reconnectFailedListeners: (() => void)[] = [];
   private reconnectAttempts = 0;
   private closed = false;
-  private reconnecting = false;
 
   /**
    * Create a new WebSocket client instance.
@@ -94,16 +93,16 @@ export class EODHDWebSocket {
    * ws.on('reconnectFailed', () => console.log('Reconnect exhausted'));
    * ```
    */
-  on(event: 'data', listener: WebSocketListener): this;
-  on(event: 'error', listener: ErrorListener): this;
-  on(event: 'close', listener: () => void): this;
-  on(event: 'reconnectFailed', listener: () => void): this;
+  on(event: "data", listener: WebSocketListener): this;
+  on(event: "error", listener: ErrorListener): this;
+  on(event: "close", listener: () => void): this;
+  on(event: "reconnectFailed", listener: () => void): this;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   on(event: string, listener: (...args: any[]) => void): this {
-    if (event === 'data') this.listeners.push(listener as WebSocketListener);
-    else if (event === 'error') this.errorListeners.push(listener as ErrorListener);
-    else if (event === 'close') this.closeListeners.push(listener as () => void);
-    else if (event === 'reconnectFailed') this.reconnectFailedListeners.push(listener as () => void);
+    if (event === "data") this.listeners.push(listener as WebSocketListener);
+    else if (event === "error") this.errorListeners.push(listener as ErrorListener);
+    else if (event === "close") this.closeListeners.push(listener as () => void);
+    else if (event === "reconnectFailed") this.reconnectFailedListeners.push(listener as () => void);
     return this;
   }
 
@@ -119,7 +118,7 @@ export class EODHDWebSocket {
    */
   subscribe(symbols: string[]): void {
     if (this.ws && symbols.length > 0) {
-      this.ws.send(JSON.stringify({ action: 'subscribe', symbols: symbols.join(',') }));
+      this.ws.send(JSON.stringify({ action: "subscribe", symbols: symbols.join(",") }));
     }
   }
 
@@ -135,7 +134,7 @@ export class EODHDWebSocket {
    */
   unsubscribe(symbols: string[]): void {
     if (this.ws && symbols.length > 0) {
-      this.ws.send(JSON.stringify({ action: 'unsubscribe', symbols: symbols.join(',') }));
+      this.ws.send(JSON.stringify({ action: "unsubscribe", symbols: symbols.join(",") }));
     }
   }
 
@@ -156,11 +155,11 @@ export class EODHDWebSocket {
 
   /** Set up connection — uses dynamic import('ws') in Node.js for ESM compat. */
   private initConnection(url: string): void {
-    if (typeof globalThis.WebSocket !== 'undefined') {
+    if (typeof globalThis.WebSocket !== "undefined") {
       this.createConnection(url, globalThis.WebSocket);
     } else {
       // Node.js: dynamic import for ESM compatibility
-      import('ws')
+      import("ws")
         .then((mod) => {
           const WS = mod.default || mod;
           this.createConnection(url, WS as unknown as typeof WebSocket);
@@ -184,28 +183,28 @@ export class EODHDWebSocket {
       this.reconnecting = false;
       // Subscribe to symbols
       if (this.symbols.length > 0) {
-        const msg = JSON.stringify({ action: 'subscribe', symbols: this.symbols.join(',') });
-        this.ws!.send(msg);
+        const msg = JSON.stringify({ action: "subscribe", symbols: this.symbols.join(",") });
+        this.ws?.send(msg);
       }
     };
 
     this.ws!.onmessage = (event: MessageEvent) => {
       let data: unknown;
       try {
-        data = JSON.parse(typeof event.data === 'string' ? event.data : event.data.toString());
+        data = JSON.parse(typeof event.data === "string" ? event.data : event.data.toString());
       } catch (err) {
         this.emitError(new Error(`WebSocket message parse error: ${err}`));
         return;
       }
       // Skip status messages
-      if (data && typeof data === 'object' && 'status_code' in data) return;
+      if (data && typeof data === "object" && "status_code" in data) return;
       for (const listener of this.listeners) {
         listener(data as WebSocketTick);
       }
     };
 
     this.ws!.onerror = (event: Event) => {
-      this.emitError(new Error(`WebSocket error: ${redactUrl((event as ErrorEvent).message || 'unknown')}`));
+      this.emitError(new Error(`WebSocket error: ${redactUrl((event as ErrorEvent).message || "unknown")}`));
     };
 
     this.ws!.onclose = () => {

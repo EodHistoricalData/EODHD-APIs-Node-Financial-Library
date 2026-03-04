@@ -1,5 +1,11 @@
-import type { HttpClient } from '../http.js';
-import type { Ticker, FundamentalsParams, FundamentalsData, BulkFundamentalsParams, BulkFundamentalsItem } from '../types.js';
+import type { HttpClient } from "../http.js";
+import type {
+  BulkFundamentalsItem,
+  BulkFundamentalsParams,
+  FundamentalsData,
+  FundamentalsParams,
+  Ticker,
+} from "../types.js";
 
 export class FundamentalsApi {
   constructor(private http: HttpClient) {}

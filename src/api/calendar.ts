@@ -1,11 +1,16 @@
-import type { HttpClient } from '../http.js';
+import type { HttpClient } from "../http.js";
 import type {
-  CalendarEarningsParams, CalendarEarningsResponse,
-  CalendarTrendsParams, CalendarTrendsResponse,
-  CalendarIposParams, CalendarIposResponse,
-  CalendarSplitsParams, CalendarSplitsResponse,
-  CalendarDividendsParams, CalendarDividendsData,
-} from '../types.js';
+  CalendarDividendsData,
+  CalendarDividendsParams,
+  CalendarEarningsParams,
+  CalendarEarningsResponse,
+  CalendarIposParams,
+  CalendarIposResponse,
+  CalendarSplitsParams,
+  CalendarSplitsResponse,
+  CalendarTrendsParams,
+  CalendarTrendsResponse,
+} from "../types.js";
 
 /**
  * Calendar API for upcoming and historical corporate events.
@@ -32,7 +37,7 @@ export class CalendarApi {
    * ```
    */
   async earnings(params: CalendarEarningsParams = {}): Promise<CalendarEarningsResponse> {
-    return this.http.get('/calendar/earnings', params);
+    return this.http.get("/calendar/earnings", params);
   }
 
   /**
@@ -50,7 +55,7 @@ export class CalendarApi {
    * ```
    */
   async trends(params: CalendarTrendsParams): Promise<CalendarTrendsResponse> {
-    return this.http.get('/calendar/trends', params);
+    return this.http.get("/calendar/trends", params);
   }
 
   /**
@@ -68,7 +73,7 @@ export class CalendarApi {
    * ```
    */
   async ipos(params: CalendarIposParams = {}): Promise<CalendarIposResponse> {
-    return this.http.get('/calendar/ipos', params);
+    return this.http.get("/calendar/ipos", params);
   }
 
   /**
@@ -86,7 +91,7 @@ export class CalendarApi {
    * ```
    */
   async splits(params: CalendarSplitsParams = {}): Promise<CalendarSplitsResponse> {
-    return this.http.get('/calendar/splits', params);
+    return this.http.get("/calendar/splits", params);
   }
 
   /**
@@ -104,6 +109,6 @@ export class CalendarApi {
    * ```
    */
   async dividends(params: CalendarDividendsParams = {}): Promise<CalendarDividendsData> {
-    return this.http.get('/calendar/dividends', params);
+    return this.http.get("/calendar/dividends", params);
   }
 }

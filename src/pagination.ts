@@ -1,8 +1,8 @@
 export type PageFetcher<T> = (offset: number, limit: number) => Promise<T[]>;
 
 export interface PaginateOptions {
-  limit?: number;   // default 100
-  offset?: number;  // default 0
+  limit?: number; // default 100
+  offset?: number; // default 0
 }
 
 export interface PaginatedResult<T> extends AsyncIterable<T> {

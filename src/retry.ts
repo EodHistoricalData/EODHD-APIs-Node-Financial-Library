@@ -14,7 +14,7 @@ export const DEFAULT_RETRY: RetryOptions = {
 
 /** Full jitter: random(floor, min(cap, base * 2^attempt)), floor = initialDelay/2 (min 100ms) */
 export function calculateDelay(attempt: number, options: RetryOptions): number {
-  const exponential = options.initialDelay * Math.pow(options.multiplier, attempt);
+  const exponential = options.initialDelay * options.multiplier ** attempt;
   const capped = Math.min(options.maxDelay, exponential);
   const floor = Math.max(100, options.initialDelay / 2);
   return floor + Math.random() * (capped - floor);

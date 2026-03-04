@@ -1,5 +1,13 @@
-import type { HttpClient } from '../http.js';
-import type { Exchange, ExchangeSymbol, ExchangeDetails, ExchangeSymbolsParams, ExchangeDetailsParams, SymbolChangeItem, DateRange } from '../types.js';
+import type { HttpClient } from "../http.js";
+import type {
+  DateRange,
+  Exchange,
+  ExchangeDetails,
+  ExchangeDetailsParams,
+  ExchangeSymbol,
+  ExchangeSymbolsParams,
+  SymbolChangeItem,
+} from "../types.js";
 
 /**
  * Exchanges API for exchange listings, symbols, details, and symbol change history.
@@ -25,7 +33,7 @@ export class ExchangesApi {
    * ```
    */
   async list(): Promise<Exchange[]> {
-    return this.http.get('/exchanges-list/');
+    return this.http.get("/exchanges-list/");
   }
 
   /**
@@ -81,6 +89,6 @@ export class ExchangesApi {
    * ```
    */
   async symbolChangeHistory(params: DateRange = {}): Promise<SymbolChangeItem[]> {
-    return this.http.get('/symbol-change-history', params);
+    return this.http.get("/symbol-change-history", params);
   }
 }
