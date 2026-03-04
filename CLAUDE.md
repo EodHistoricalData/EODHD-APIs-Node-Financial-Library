@@ -95,9 +95,9 @@ Tests mock `globalThis.fetch` — pure unit tests, no network. Verify exact URL 
 
 ## Build & Publish
 
-- **Bundler:** tsup 8 — dual CJS (`dist/index.js`) + ESM (`dist/index.mjs`)
-- **Types:** `dist/index.d.ts` + `.d.ts.map`
-- **Treeshake:** enabled, splitting disabled, sourcemap enabled
+- **Bundler:** tsup 8 — dual CJS (`dist/index.cjs`) + ESM (`dist/index.js`)
+- **Types:** `dist/index.d.ts` (ESM) + `dist/index.d.cts` (CJS)
+- **Treeshake:** enabled, splitting enabled, sourcemap enabled
 - **Prepublish:** `npm run build` runs automatically before `npm publish`
 - **Target:** ES2022, strict TypeScript
 
