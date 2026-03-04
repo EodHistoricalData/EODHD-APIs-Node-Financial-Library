@@ -1,5 +1,12 @@
 # eodhd
 
+[![npm version](https://img.shields.io/npm/v/eodhd.svg)](https://www.npmjs.com/package/eodhd)
+[![npm downloads](https://img.shields.io/npm/dm/eodhd.svg)](https://www.npmjs.com/package/eodhd)
+[![CI](https://github.com/EodHistoricalData/EODHD-APIs-Node-Financial-Library/actions/workflows/ci.yml/badge.svg)](https://github.com/EodHistoricalData/EODHD-APIs-Node-Financial-Library/actions/workflows/ci.yml)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue.svg)](https://www.typescriptlang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org/)
+
 Official Node.js/TypeScript library for [EODHD Financial Data APIs](https://eodhd.com).
 
 Access 150,000+ tickers across 70+ exchanges — historical prices, fundamentals, options, news, real-time WebSocket streaming, and more.
@@ -423,7 +430,7 @@ const client = new EODHDClient({
 
 ## Requirements
 
-- Node.js >= 18 (uses native `fetch`)
+- Node.js >= 20 (uses native `fetch`)
 - Also works in Deno, Bun, and modern browsers
 - Optional: `ws` package for WebSocket in Node.js (browsers use native WebSocket)
 
