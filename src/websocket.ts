@@ -38,6 +38,7 @@ export class EODHDWebSocket {
   private reconnectFailedListeners: (() => void)[] = [];
   private reconnectAttempts = 0;
   private closed = false;
+  private reconnecting = false;
 
   /**
    * Create a new WebSocket client instance.
