@@ -22,5 +22,5 @@ This policy covers the `eodhd` npm package source code. For vulnerabilities in t
 
 | Version | Supported |
 |---------|-----------|
-| 0.2.x   | Yes       |
-| < 0.2   | No        |
+| 1.x     | Yes       |
+| < 1.0   | No        |

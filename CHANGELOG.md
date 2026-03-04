@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.0 (2026-03-04)
+
+First stable release. No API changes from 0.2.0.
+
+- Repo cleanup: squashed git history, added CI/CD, docs, templates
+- Node.js minimum bumped from 18 to 20 (Node 18 EOL)
+- Added: SECURITY.md, CONTRIBUTING.md, CODE_OF_CONDUCT.md, AGENTS.md
+- Added: GitHub Actions CI (Node 20/22/24) and manual release workflow
+
 ## 0.2.0 (2026-03-03)
 
 ### Security
