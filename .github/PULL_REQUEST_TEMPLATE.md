@@ -1,18 +1,15 @@
 ## What
 
-Brief description of the change.
+Brief description of changes.
 
 ## Why
 
-Motivation or issue link.
-
-## How
-
-Implementation approach (if non-obvious).
+Motivation / issue link.
 
 ## Checklist
 
 - [ ] `npm run typecheck` passes
 - [ ] `npm run test:unit` passes
 - [ ] `npm run build` succeeds
-- [ ] Updated CHANGELOG.md (if user-facing)
+- [ ] Types are exported correctly
+- [ ] CHANGELOG.md updated (if user-facing change)
