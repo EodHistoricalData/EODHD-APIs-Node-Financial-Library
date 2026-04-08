@@ -172,6 +172,12 @@ describe("EODHDClient", () => {
       expect(typeof client.cboe.index).toBe("function");
     });
 
+    it("exposes commodities as a direct property", () => {
+      const client = createClient();
+      expect(client.commodities).toBeDefined();
+      expect(typeof client.commodities.history).toBe("function");
+    });
+
     it("exposes marketplace with all providers", () => {
       const client = createClient();
       expect(client.marketplace).toBeDefined();
@@ -541,6 +547,26 @@ describe("EODHDClient", () => {
 
       const url = getCalledUrl(fetch);
       expect(url).toContain("/cboe/index");
+    });
+  });
+
+  // ── Commodities (direct property) ────────────────────────────────────────
+
+  describe("Commodities (via direct property)", () => {
+    it("commodities.history() calls /commodities/historical/{code}", async () => {
+      const client = createClient();
+      await client.commodities.history("WTI");
+
+      expect(getCalledUrl(fetch)).toContain("/commodities/historical/WTI");
+    });
+
+    it("commodities.history() passes interval param", async () => {
+      const client = createClient();
+      await client.commodities.history("NATURAL_GAS", { interval: "daily" });
+
+      const url = getCalledUrl(fetch);
+      expect(url).toContain("/commodities/historical/NATURAL_GAS");
+      expect(url).toContain("interval=daily");
     });
   });
 });
