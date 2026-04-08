@@ -1,5 +1,6 @@
 import { CalendarApi } from "./api/calendar.js";
 import { CboeApi } from "./api/cboe.js";
+import { CommoditiesApi } from "./api/commodities.js";
 import { CorporateApi } from "./api/corporate.js";
 // API modules
 import { EodApi } from "./api/eod.js";
@@ -159,6 +160,19 @@ export class EODHDClient {
   readonly cboe: CboeApi;
 
   /**
+   * Commodities: historical prices for energy, metals, and agricultural commodities.
+   *
+   * @example
+   * ```ts
+   * const wti = await client.commodities.history('WTI', { interval: 'monthly' });
+   * console.log(wti.meta.name, wti.data[0].value);
+   * ```
+   *
+   * @see https://eodhd.com/financial-apis/commodities-api/
+   */
+  readonly commodities: CommoditiesApi;
+
+  /**
    * Marketplace data providers (Unicorn Bay, Trading Hours, Praams, InvestVerte).
    *
    * @example
@@ -222,6 +236,7 @@ export class EODHDClient {
     this._macro = new MacroApi(this.http);
     this.treasury = new TreasuryApi(this.http);
     this.cboe = new CboeApi(this.http);
+    this.commodities = new CommoditiesApi(this.http);
     this._screening = new ScreeningApi(this.http);
     this._corporate = new CorporateApi(this.http);
     this._user = new UserApi(this.http);

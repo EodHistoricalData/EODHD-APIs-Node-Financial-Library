@@ -934,6 +934,59 @@ export interface EsgData {
   [key: string]: unknown;
 }
 
+// ── Commodities ──
+
+export type CommodityCode =
+  | "WTI"
+  | "BRENT"
+  | "NATURAL_GAS"
+  | "GASOLINE_US"
+  | "DIESEL_USGULF"
+  | "HEATING_OIL_NYH"
+  | "JET_FUEL_USGULF"
+  | "PROPANE_MBTX"
+  | "COAL_AU"
+  | "URANIUM"
+  | "COPPER"
+  | "ALUMINUM"
+  | "WHEAT"
+  | "CORN"
+  | "SUGAR"
+  | "COTTON"
+  | "COFFEE_MILD_ARABICA"
+  | "COFFEE_ROBUSTAS"
+  | "ALL_COMMODITIES"
+  | "ALL_COMMODITIES_PRODUCER"
+  | "ENERGY_INDEX"
+  | "NATGAS_EU"
+  | "LNG_ASIA";
+
+export type CommodityInterval = "daily" | "weekly" | "monthly" | "quarterly" | "annual";
+
+export interface CommodityHistoryParams {
+  interval?: CommodityInterval;
+}
+
+export interface CommodityMeta {
+  name: string;
+  interval: CommodityInterval;
+  unit: string;
+  total: number;
+}
+
+export interface CommodityDataPoint {
+  date: string;
+  value: number;
+}
+
+export interface CommodityHistoryResponse {
+  meta: CommodityMeta;
+  data: CommodityDataPoint[];
+  links: {
+    next: string | null;
+  };
+}
+
 // ── WebSocket ──
 
 export type WebSocketFeed = "us" | "us-quote" | "forex" | "crypto";
