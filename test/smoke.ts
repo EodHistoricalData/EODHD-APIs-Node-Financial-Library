@@ -86,6 +86,8 @@ async function main() {
   // ── Corporate ──
   console.log("\nCorporate:");
   await test("insiderTransactions", () => client.insiderTransactions({ code: "AAPL", limit: 3 }));
+  await test("asxCorporateActions (dividends PMV.AU)", () =>
+    client.asxCorporateActions({ type: "dividends", symbol: "PMV.AU", "page[limit]": 3 }));
 
   // ── Macro & Economic ──
   console.log("\nMacro & Economic:");

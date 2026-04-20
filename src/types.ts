@@ -301,6 +301,156 @@ export interface InsiderTransactionItem {
   [key: string]: unknown;
 }
 
+// ── ASX Corporate Actions ──
+
+export type AsxCorporateActionType =
+  | "dividends"
+  | "splits"
+  | "bonus-issues"
+  | "rights-issues"
+  | "buybacks"
+  | "capital-returns"
+  | "spp"
+  | "other";
+
+export interface AsxCorporateActionsParams {
+  /** Corporate action category. Omit to return all types. */
+  type?: AsxCorporateActionType;
+  /** ASX ticker with `.AU` suffix, e.g. `"PMV.AU"`. */
+  symbol?: string;
+  /** Inclusive start date in `YYYY-MM-DD` format, applied to the event date. */
+  date_from?: string;
+  /** Inclusive end date in `YYYY-MM-DD` format, applied to the event date. */
+  date_to?: string;
+  /** Pagination offset, zero-based. Default 0. */
+  "page[offset]"?: number;
+  /** Page size, 1 to 1000. Default 100. */
+  "page[limit]"?: number;
+}
+
+export interface AsxCorporateActionsResponse<T = AsxCorporateActionItem> {
+  data: T[];
+  meta: {
+    total: number;
+    page: { offset: number; limit: number };
+  };
+  links: {
+    next: string | null;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Union of all ASX corporate action record shapes. Actual field presence depends
+ * on the action type requested via the `type` parameter.
+ */
+export type AsxCorporateActionItem =
+  | AsxDividendItem
+  | AsxSplitItem
+  | AsxBonusIssueItem
+  | AsxRightsIssueItem
+  | AsxCapitalReturnItem
+  | AsxSppItem;
+
+export interface AsxDividendItem {
+  code: string;
+  date: string;
+  value: number;
+  unadjustedValue?: number;
+  period?: string | null;
+  currency: string;
+  exchange: string;
+  recordDate?: string | null;
+  paymentDate?: string | null;
+  declarationDate?: string | null;
+  _asx_extra?: AsxDividendExtra;
+  [key: string]: unknown;
+}
+
+export interface AsxDividendExtra {
+  isin?: string | null;
+  asx_ticker?: string;
+  corporate_action_id?: string;
+  transaction_type?: string;
+  franked_amount_aud?: number;
+  franked_percent?: number;
+  drp_indicator?: number;
+  drp_price_aud?: number | null;
+  drp_discount_rate?: number;
+  bsp_indicator?: number;
+  special_indicator?: string;
+  pari_passu_indicator?: string;
+  withholding_tax_rate?: number;
+  tax_deferred_amount_aud?: number;
+  tax_advantaged_amount_aud?: number;
+  foreign_source_dividend_aud?: number;
+  special_dividend_amount_aud?: number;
+  estimated_trust_distribution_aud?: number;
+  comment?: string | null;
+  [key: string]: unknown;
+}
+
+export interface AsxSplitItem {
+  code: string;
+  date: string;
+  split: string;
+  exchange: string;
+  _asx_extra?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+export interface AsxBonusIssueItem {
+  code: string;
+  date: string;
+  ratio: string;
+  exchange: string;
+  pariPassu?: boolean;
+  recordDate?: string | null;
+  despatchDate?: string | null;
+  [key: string]: unknown;
+}
+
+export interface AsxRightsIssueItem {
+  code: string;
+  date: string;
+  type: "renounceable" | "non-renounceable" | "prospectus-rights" | "xr";
+  ratio: string;
+  currency: string;
+  exchange: string;
+  pariPassu?: boolean;
+  recordDate?: string | null;
+  despatchDate?: string | null;
+  applicationPrice?: number | null;
+  applicationCloseDate?: string | null;
+  [key: string]: unknown;
+}
+
+export interface AsxCapitalReturnItem {
+  code: string;
+  date: string;
+  value: number;
+  currency: string;
+  exchange: string;
+  recordDate?: string | null;
+  paymentDate?: string | null;
+  [key: string]: unknown;
+}
+
+export interface AsxSppItem {
+  code: string;
+  price?: number | null;
+  currency: string;
+  exchange: string;
+  maxAmount?: number | null;
+  maxShares?: number | null;
+  minAmount?: number | null;
+  minShares?: number | null;
+  recordDate?: string | null;
+  despatchDate?: string | null;
+  offerCloseDate?: string | null;
+  [key: string]: unknown;
+}
+
 // ── Search ──
 
 export interface SearchParams {
@@ -539,7 +689,8 @@ export interface EconomicEventsParams extends DateRange, Pagination {
 
 export interface EconomicEventItem {
   type: string;
-  comparison: string;
+  comparison: string | null;
+  period: string;
   country: string;
   date: string;
   actual?: number | null;

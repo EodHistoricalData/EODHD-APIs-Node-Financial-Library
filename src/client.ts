@@ -21,6 +21,8 @@ import { TradingHoursApi } from "./marketplace/tradinghours.js";
 import { UnicornBayApi } from "./marketplace/unicornbay.js";
 import { DEFAULT_RETRY } from "./retry.js";
 import type {
+  AsxCorporateActionsParams,
+  AsxCorporateActionsResponse,
   BulkEodDataPoint,
   BulkEodParams,
   BulkFundamentalsItem,
@@ -615,6 +617,28 @@ export class EODHDClient {
    */
   insiderTransactions(params?: InsiderTransactionsParams): Promise<InsiderTransactionItem[]> {
     return this._corporate.insiderTransactions(params);
+  }
+
+  /**
+   * Fetch ASX (Australian Securities Exchange) corporate actions.
+   *
+   * Returns dividends, splits, bonus issues, rights issues, buybacks,
+   * capital returns, SPP and other corporate actions sourced from the ASX
+   * ReferencePoint E34 feed. All tickers use the `.AU` suffix.
+   *
+   * @param params - Optional filters: `type`, `symbol`, `date_from`, `date_to`, `page[offset]`, `page[limit]`
+   * @returns JSON:API envelope with `data`, `meta`, and `links.next` for pagination
+   * @throws {@link EODHDError} on API error
+   * @see https://eodhd.com/financial-apis/asx-corporate-actions-api/
+   *
+   * @example
+   * ```ts
+   * const res = await client.asxCorporateActions({ type: 'dividends', symbol: 'PMV.AU' });
+   * console.log(res.data[0].code, res.data[0].date, res.meta.total);
+   * ```
+   */
+  asxCorporateActions(params?: AsxCorporateActionsParams): Promise<AsxCorporateActionsResponse> {
+    return this._corporate.asxCorporateActions(params);
   }
 
   // ── Macro & Economic ──

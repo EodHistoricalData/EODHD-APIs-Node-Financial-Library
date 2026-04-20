@@ -372,6 +372,35 @@ describe("EODHDClient", () => {
       expect(url).toContain("/insider-transactions");
       expect(url).toContain("code=AAPL");
     });
+
+    it("asxCorporateActions() calls /asx-corporate-actions", async () => {
+      const client = createClient();
+      await client.asxCorporateActions();
+
+      const url = getCalledUrl(fetch);
+      expect(url).toContain("/asx-corporate-actions");
+    });
+
+    it("asxCorporateActions() passes filters and URL-encodes page[offset]/page[limit]", async () => {
+      const client = createClient();
+      await client.asxCorporateActions({
+        type: "dividends",
+        symbol: "PMV.AU",
+        date_from: "2026-01-01",
+        date_to: "2026-04-01",
+        "page[offset]": 10,
+        "page[limit]": 50,
+      });
+
+      const url = getCalledUrl(fetch);
+      expect(url).toContain("/asx-corporate-actions");
+      expect(url).toContain("type=dividends");
+      expect(url).toContain("symbol=PMV.AU");
+      expect(url).toContain("date_from=2026-01-01");
+      expect(url).toContain("date_to=2026-04-01");
+      expect(url).toContain("page%5Boffset%5D=10");
+      expect(url).toContain("page%5Blimit%5D=50");
+    });
   });
 
   // ── Delegation: Macro ───────────────────────────────────────────────────
