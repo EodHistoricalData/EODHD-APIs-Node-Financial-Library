@@ -461,6 +461,44 @@ export class EODHDClient {
     return this._fundamentals.bulkFundamentals(exchange, params);
   }
 
+  /**
+   * Fetch company fundamentals using the v1.1 API (extended Earnings::Trend section).
+   *
+   * @param ticker - Symbol with exchange suffix, e.g. `"AAPL.US"`
+   * @param params - Optional date range, filter, historical toggle
+   * @returns Fundamentals data object with nested sections
+   * @throws {@link EODHDError} on API error
+   * @see https://eodhd.com/financial-apis/stock-etfs-fundamental-data-feeds/
+   *
+   * @example
+   * ```ts
+   * const fund = await client.fundamentalsV1_1('AAPL.US');
+   * console.log(fund.Earnings); // extended Trend data
+   * ```
+   */
+  fundamentalsV1_1(ticker: Ticker, params?: FundamentalsParams): Promise<FundamentalsData> {
+    return this._fundamentals.fundamentalsV1_1(ticker, params);
+  }
+
+  /**
+   * Fetch bulk fundamentals v1.1 for all tickers on an exchange (extended Earnings::Trend).
+   *
+   * @param exchange - Exchange code, e.g. `"US"`
+   * @param params - Optional symbols filter
+   * @returns Array of bulk fundamentals items
+   * @throws {@link EODHDError} on API error
+   * @see https://eodhd.com/financial-apis/bulk-fundamentals-api/
+   *
+   * @example
+   * ```ts
+   * const bulk = await client.bulkFundamentalsV1_1('US', { symbols: 'AAPL,MSFT' });
+   * console.log(bulk[0].General?.Name);
+   * ```
+   */
+  bulkFundamentalsV1_1(exchange: string, params?: BulkFundamentalsParams): Promise<BulkFundamentalsItem[]> {
+    return this._fundamentals.bulkFundamentalsV1_1(exchange, params);
+  }
+
   // ── News & Sentiment ──
 
   /**

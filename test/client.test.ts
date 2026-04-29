@@ -288,6 +288,24 @@ describe("EODHDClient", () => {
       expect(url).toContain("/bulk-fundamentals/US");
       expect(url).toContain("symbols=AAPL%2CMSFT");
     });
+
+    it("fundamentalsV1_1() calls /v1.1/fundamentals/{ticker}", async () => {
+      const client = createClient();
+      await client.fundamentalsV1_1("AAPL.US", { filter: "Earnings" });
+
+      const url = getCalledUrl(fetch);
+      expect(url).toContain("/v1.1/fundamentals/AAPL.US");
+      expect(url).toContain("filter=Earnings");
+    });
+
+    it("bulkFundamentalsV1_1() calls /v1.1/bulk-fundamentals/{exchange}", async () => {
+      const client = createClient();
+      await client.bulkFundamentalsV1_1("US", { symbols: "AAPL,MSFT" });
+
+      const url = getCalledUrl(fetch);
+      expect(url).toContain("/v1.1/bulk-fundamentals/US");
+      expect(url).toContain("symbols=AAPL%2CMSFT");
+    });
   });
 
   // ── Delegation: News & Sentiment ────────────────────────────────────────
