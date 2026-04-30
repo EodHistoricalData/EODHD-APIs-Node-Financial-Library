@@ -123,13 +123,6 @@ async function main() {
     client.marketplace.unicornbay.tickdata("AAPL", { from: "1740000000", to: "1740001000" }));
   await test("unicornbay.logo", () => client.marketplace.unicornbay.logo("AAPL"));
 
-  // ── Marketplace: Trading Hours ──
-  console.log("\nMarketplace — Trading Hours:");
-  await test("tradinghours.markets", () => client.marketplace.tradinghours.markets());
-  await test("tradinghours.details", () => client.marketplace.tradinghours.details({ market: "US.NASDAQ" }));
-  await test("tradinghours.lookup", () => client.marketplace.tradinghours.lookup({ "filter[name]": "NASDAQ" }));
-  await test("tradinghours.status", () => client.marketplace.tradinghours.status({ market: "US.NASDAQ" }));
-
   // ── Marketplace: PRAAMS ──
   console.log("\nMarketplace — PRAAMS:");
   await test("praams.analyseEquityByTicker", () => client.marketplace.praams.analyseEquityByTicker("AAPL.DE"));
