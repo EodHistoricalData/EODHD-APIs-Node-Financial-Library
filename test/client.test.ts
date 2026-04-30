@@ -182,7 +182,6 @@ describe("EODHDClient", () => {
       const client = createClient();
       expect(client.marketplace).toBeDefined();
       expect(client.marketplace.unicornbay).toBeDefined();
-      expect(client.marketplace.tradinghours).toBeDefined();
       expect(client.marketplace.praams).toBeDefined();
       expect(client.marketplace.investverte).toBeDefined();
     });

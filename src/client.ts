@@ -15,8 +15,6 @@ import { HttpClient } from "./http.js";
 import { type Logger, resolveLogger } from "./logger.js";
 import { InvestVerteApi } from "./marketplace/investverte.js";
 import { PraamsApi } from "./marketplace/praams.js";
-import { TradingHoursApi } from "./marketplace/tradinghours.js";
-
 // Marketplace modules
 import { UnicornBayApi } from "./marketplace/unicornbay.js";
 import { DEFAULT_RETRY } from "./retry.js";
@@ -173,17 +171,15 @@ export class EODHDClient {
   readonly commodities: CommoditiesApi;
 
   /**
-   * Marketplace data providers (Unicorn Bay, Trading Hours, Praams, InvestVerte).
+   * Marketplace data providers (Unicorn Bay, Praams, InvestVerte).
    *
    * @example
    * ```ts
-   * const markets = await client.marketplace.tradinghours.markets();
    * const analysis = await client.marketplace.praams.analyseEquityByTicker('AAPL.US');
    * ```
    */
   readonly marketplace: {
     readonly unicornbay: UnicornBayApi;
-    readonly tradinghours: TradingHoursApi;
     readonly praams: PraamsApi;
     readonly investverte: InvestVerteApi;
   };
@@ -244,7 +240,6 @@ export class EODHDClient {
     // Marketplace
     this.marketplace = {
       unicornbay: new UnicornBayApi(this.http),
-      tradinghours: new TradingHoursApi(this.http),
       praams: new PraamsApi(this.http),
       investverte: new InvestVerteApi(this.http),
     };

@@ -805,52 +805,6 @@ export interface MarketplaceTickDataPoint {
   [key: string]: unknown;
 }
 
-// ── Marketplace: Trading Hours ──
-
-export type TradingHoursMarketsParams = {};
-
-export interface TradingHoursDetailsParams {
-  market?: string;
-}
-
-export interface TradingHoursLookupParams {
-  "filter[symbol]"?: string;
-  "filter[exchange]"?: string;
-}
-
-export interface TradingHoursStatusParams {
-  market?: string;
-}
-
-export interface TradingHoursMarket {
-  code: string;
-  name: string;
-  country: string;
-  [key: string]: unknown;
-}
-
-export interface TradingHoursDetail {
-  code: string;
-  name: string;
-  country: string;
-  timezone: string;
-  isOpen: boolean;
-  [key: string]: unknown;
-}
-
-export interface TradingHoursLookupResult {
-  code: string;
-  market: string;
-  [key: string]: unknown;
-}
-
-export interface TradingHoursStatus {
-  code: string;
-  name: string;
-  isOpen: boolean;
-  [key: string]: unknown;
-}
-
 // ── Marketplace: Praams ──
 
 export interface PraamsExploreParams {

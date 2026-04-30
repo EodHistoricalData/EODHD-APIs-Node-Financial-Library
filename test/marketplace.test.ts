@@ -79,41 +79,6 @@ describe("Marketplace: Unicorn Bay", () => {
   });
 });
 
-describe("Marketplace: Trading Hours", () => {
-  let fetch: ReturnType<typeof vi.fn>;
-
-  beforeEach(() => {
-    fetch = mockFetchOk();
-    vi.stubGlobal("fetch", fetch);
-  });
-
-  afterEach(() => vi.restoreAllMocks());
-
-  it("markets() calls /mp/tradinghours/markets", async () => {
-    const client = createClient();
-    await client.marketplace.tradinghours.markets();
-    expect(getCalledUrl(fetch)).toContain("/mp/tradinghours/markets");
-  });
-
-  it("details() calls /mp/tradinghours/markets/details", async () => {
-    const client = createClient();
-    await client.marketplace.tradinghours.details({ "filter[market]": "US" });
-    expect(getCalledUrl(fetch)).toContain("/mp/tradinghours/markets/details");
-  });
-
-  it("lookup() calls /mp/tradinghours/markets/lookup", async () => {
-    const client = createClient();
-    await client.marketplace.tradinghours.lookup({ "filter[symbol]": "AAPL" });
-    expect(getCalledUrl(fetch)).toContain("/mp/tradinghours/markets/lookup");
-  });
-
-  it("status() calls /mp/tradinghours/markets/status", async () => {
-    const client = createClient();
-    await client.marketplace.tradinghours.status();
-    expect(getCalledUrl(fetch)).toContain("/mp/tradinghours/markets/status");
-  });
-});
-
 describe("Marketplace: Praams", () => {
   let fetch: ReturnType<typeof vi.fn>;
 
