@@ -662,6 +662,49 @@ export interface SymbolChangeHistoryParams extends DateRange {}
 
 export interface ExchangeDetailsParams extends DateRange {}
 
+// ── Exchange Details V2 ──
+
+/** Response from GET /v2/exchange-details (list of supported exchange codes) */
+export interface ExchangeDetailsV2ListResponse {
+  data: string[];
+}
+
+/** Trading hours for an exchange (v2 API) */
+export interface ExchangeDetailsV2TradingHours {
+  Open: string;
+  Close: string;
+  WorkingDays: string;
+  PreMarketOpen?: string;
+  PreMarketClose?: string;
+  AfterHoursOpen?: string;
+  AfterHoursClose?: string;
+  LunchBreakStart?: string;
+  LunchBreakEnd?: string;
+}
+
+/** Holiday entry for an exchange (v2 API) */
+export interface ExchangeDetailsV2Holiday {
+  Holiday: string;
+  Type: "Official" | "Bank" | "EarlyClose";
+  EarlyClose?: string;
+}
+
+/** Exchange details data (v2 API) */
+export interface ExchangeDetailsV2Data {
+  Name: string;
+  Code: string;
+  Timezone: string;
+  TradingHours: ExchangeDetailsV2TradingHours;
+  ExchangeHolidays: Record<string, ExchangeDetailsV2Holiday>;
+}
+
+/** Response from GET /v2/exchange-details/{code} */
+export interface ExchangeDetailsV2Response {
+  data: ExchangeDetailsV2Data;
+  meta: unknown[];
+  links: unknown[];
+}
+
 // ── User ──
 
 export interface UserData {
