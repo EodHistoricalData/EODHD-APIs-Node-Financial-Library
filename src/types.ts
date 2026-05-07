@@ -539,7 +539,8 @@ export interface EconomicEventsParams extends DateRange, Pagination {
 
 export interface EconomicEventItem {
   type: string;
-  comparison: string;
+  comparison: string | null;
+  period: string | null;
   country: string;
   date: string;
   actual?: number | null;
