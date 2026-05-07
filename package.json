@@ -1,6 +1,6 @@
 {
   "name": "eodhd",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "Official Node.js/TypeScript library for EODHD Financial Data APIs",
   "main": "dist/index.cjs",
