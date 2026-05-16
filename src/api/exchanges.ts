@@ -4,6 +4,8 @@ import type {
   Exchange,
   ExchangeDetails,
   ExchangeDetailsParams,
+  ExchangeDetailsV2ListResponse,
+  ExchangeDetailsV2Response,
   ExchangeSymbol,
   ExchangeSymbolsParams,
   SymbolChangeItem,
@@ -90,5 +92,40 @@ export class ExchangesApi {
    */
   async symbolChangeHistory(params: DateRange = {}): Promise<SymbolChangeItem[]> {
     return this.http.get("/symbol-change-history", params);
+  }
+
+  /**
+   * Get a list of exchange codes supported by Exchange Details V2 API.
+   *
+   * @returns Response with array of supported exchange code strings
+   * @throws {@link EODHDError} on API error
+   * @see https://eodhd.com/financial-apis/exchanges-api-list-of-tickers-and-trading-hours/
+   *
+   * @example
+   * ```ts
+   * const result = await client.exchanges.detailsV2List();
+   * console.log(result.data); // ["US", "LSE", "TO", ...]
+   * ```
+   */
+  async detailsV2List(): Promise<ExchangeDetailsV2ListResponse> {
+    return this.http.get("/v2/exchange-details");
+  }
+
+  /**
+   * Get exchange details v2 including trading hours, holidays, and early close info.
+   *
+   * @param code - Exchange code, e.g. `"US"`, `"LSE"`, `"TO"`
+   * @returns Response with exchange details (trading hours, holidays, timezone)
+   * @throws {@link EODHDError} on API error
+   * @see https://eodhd.com/financial-apis/exchanges-api-list-of-tickers-and-trading-hours/
+   *
+   * @example
+   * ```ts
+   * const result = await client.exchanges.detailsV2('US');
+   * console.log(result.data.Name, result.data.TradingHours.Open);
+   * ```
+   */
+  async detailsV2(code: string): Promise<ExchangeDetailsV2Response> {
+    return this.http.get(`/v2/exchange-details/${encodeURIComponent(code)}`);
   }
 }

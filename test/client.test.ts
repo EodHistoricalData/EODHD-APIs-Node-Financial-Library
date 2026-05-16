@@ -154,6 +154,8 @@ describe("EODHDClient", () => {
       expect(typeof client.exchanges.symbols).toBe("function");
       expect(typeof client.exchanges.details).toBe("function");
       expect(typeof client.exchanges.symbolChangeHistory).toBe("function");
+      expect(typeof client.exchanges.detailsV2List).toBe("function");
+      expect(typeof client.exchanges.detailsV2).toBe("function");
     });
 
     it("exposes treasury as a direct property", () => {
@@ -509,6 +511,27 @@ describe("EODHDClient", () => {
       await client.exchanges.symbolChangeHistory();
 
       expect(getCalledUrl(fetch)).toContain("/symbol-change-history");
+    });
+
+    it("exchanges.detailsV2List() calls /v2/exchange-details", async () => {
+      const client = createClient();
+      await client.exchanges.detailsV2List();
+
+      expect(getCalledUrl(fetch)).toContain("/v2/exchange-details");
+    });
+
+    it("exchanges.detailsV2() calls /v2/exchange-details/{code}", async () => {
+      const client = createClient();
+      await client.exchanges.detailsV2("US");
+
+      expect(getCalledUrl(fetch)).toContain("/v2/exchange-details/US");
+    });
+
+    it("exchanges.detailsV2() encodes exchange code", async () => {
+      const client = createClient();
+      await client.exchanges.detailsV2("X Y");
+
+      expect(getCalledUrl(fetch)).toContain("/v2/exchange-details/X%20Y");
     });
   });
 
