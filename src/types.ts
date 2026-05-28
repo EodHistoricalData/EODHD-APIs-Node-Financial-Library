@@ -283,12 +283,14 @@ export interface BulkFundamentalsItem {
   [key: string]: unknown;
 }
 
-// ── Insider Transactions ──
+// ── Insider Transactions (legacy, obsolete) ──
 
+/** @deprecated Legacy /insider-transactions params. Use {@link InsiderTransactionsV2Params}. */
 export interface InsiderTransactionsParams extends DateRange, Pagination {
   code?: string;
 }
 
+/** @deprecated Legacy /insider-transactions item shape. Use {@link Form4Filing}. */
 export interface InsiderTransactionItem {
   code: string;
   date: string;
@@ -299,6 +301,72 @@ export interface InsiderTransactionItem {
   transactionPrice: number;
   transactionShares: number;
   [key: string]: unknown;
+}
+
+// ── Insider Transactions v2 (SEC Form 4) ──
+
+export interface InsiderTransactionsV2Params {
+  "page[offset]"?: number;
+  "page[limit]"?: number;
+}
+
+export interface Form4NonDerivative {
+  reporting_owner_cik: string;
+  reporting_owner_name: string;
+  is_director: boolean;
+  is_officer: boolean;
+  is_ten_percent_owner: boolean;
+  is_other: boolean;
+  officer_title: string | null;
+  other_text: string | null;
+  security_title: string;
+  transaction_date: string;
+  transaction_code: string;
+  acquired_or_disposed: "A" | "D";
+  shares_amount: number;
+  price_per_share: number | null;
+  shares_owned_after: number;
+  total_value: number | null;
+}
+
+export interface Form4Derivative {
+  reporting_owner_cik: string;
+  reporting_owner_name: string;
+  security_title: string;
+  conversion_or_exercise_price: number | null;
+  transaction_date: string;
+  transaction_code: string;
+  acquired_or_disposed: "A" | "D";
+  shares_amount: number;
+  price_per_share: number | null;
+  shares_owned_after: number;
+  underlying_security_title: string | null;
+  underlying_shares: number | null;
+  exercise_date: string | null;
+  expiration_date: string | null;
+}
+
+export interface Form4Footnote {
+  footnote_id: string;
+  text: string;
+}
+
+export interface Form4Filing {
+  accession_number: string;
+  filed_at: string;
+  period_of_report: string;
+  non_derivative: Form4NonDerivative[];
+  derivative: Form4Derivative[];
+  footnotes: Form4Footnote[];
+}
+
+export interface InsiderTransactionsV2Response {
+  data: Form4Filing[];
+  meta: {
+    total: number;
+    page: { offset: number; limit: number };
+  };
+  links: { next: string | null };
 }
 
 // ── Search ──
