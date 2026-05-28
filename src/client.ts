@@ -36,6 +36,8 @@ import type {
   IdMappingParams,
   InsiderTransactionItem,
   InsiderTransactionsParams,
+  InsiderTransactionsV2Params,
+  InsiderTransactionsV2Response,
   IntradayDataPoint,
   IntradayParams,
   MacroIndicatorItem,
@@ -633,7 +635,9 @@ export class EODHDClient {
   // ── Corporate Actions ──
 
   /**
-   * Fetch insider transactions (SEC Form 4 filings).
+   * @deprecated Obsolete legacy endpoint. Use {@link EODHDClient.insiderTransactionsV2} instead.
+   *
+   * Fetch insider transactions (legacy flat schema). Kept for backward compatibility.
    *
    * @param params - Optional ticker code, date range, pagination
    * @returns Array of insider transaction items
@@ -648,6 +652,33 @@ export class EODHDClient {
    */
   insiderTransactions(params?: InsiderTransactionsParams): Promise<InsiderTransactionItem[]> {
     return this._corporate.insiderTransactions(params);
+  }
+
+  /**
+   * Fetch insider transactions v2 — SEC Form 4 filings parsed directly from EDGAR.
+   *
+   * Returns paginated filings with non-derivative (stock) and derivative (options/RSUs/warrants)
+   * transactions plus referenced footnotes. Cost: 10 API calls per request.
+   *
+   * @param symbol - US ticker symbol (e.g. `"AAPL"` or `"AAPL.US"`)
+   * @param params - Optional pagination via `page[offset]` (default 0) and `page[limit]` (default 20, max 100)
+   * @returns Paginated Form 4 filing response with `data`, `meta`, `links`
+   * @throws {@link EODHDError} on API error
+   * @see https://eodhd.com/financial-apis/insider-transactions-api/
+   *
+   * @example
+   * ```ts
+   * const txns = await client.insiderTransactionsV2('AAPL', { 'page[limit]': 5 });
+   * for (const filing of txns.data) {
+   *   console.log(filing.accession_number, filing.filed_at, filing.non_derivative.length);
+   * }
+   * ```
+   */
+  insiderTransactionsV2(
+    symbol: string,
+    params?: InsiderTransactionsV2Params,
+  ): Promise<InsiderTransactionsV2Response> {
+    return this._corporate.insiderTransactionsV2(symbol, params);
   }
 
   // ── Macro & Economic ──

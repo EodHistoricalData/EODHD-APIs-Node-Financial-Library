@@ -391,6 +391,16 @@ describe("EODHDClient", () => {
       expect(url).toContain("/insider-transactions");
       expect(url).toContain("code=AAPL");
     });
+
+    it("insiderTransactionsV2() calls /sec-filings/{symbol}/form4", async () => {
+      const client = createClient();
+      await client.insiderTransactionsV2("AAPL", { "page[limit]": 5 });
+
+      const url = getCalledUrl(fetch);
+      expect(url).toContain("/sec-filings/AAPL/form4");
+      // URLSearchParams percent-encodes square brackets in keys
+      expect(url).toMatch(/page%5Blimit%5D=5|page\[limit\]=5/);
+    });
   });
 
   // ── Delegation: Macro ───────────────────────────────────────────────────
