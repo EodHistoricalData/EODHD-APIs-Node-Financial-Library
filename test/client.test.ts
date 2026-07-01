@@ -609,4 +609,173 @@ describe("EODHDClient", () => {
       expect(url).toContain("interval=daily");
     });
   });
+
+  // ── Sub-module exposure: new APIs ────────────────────────────────────────
+
+  describe("sub-module exposure: credit risk, sanctions, interest rates", () => {
+    it("exposes creditRisk as a direct property", () => {
+      const client = createClient();
+      expect(client.creditRisk).toBeDefined();
+      expect(typeof client.creditRisk.sovereignRiskPremium).toBe("function");
+      expect(typeof client.creditRisk.sovereignCreditRatings).toBe("function");
+      expect(typeof client.creditRisk.sovereignCdsSpreads).toBe("function");
+      expect(typeof client.creditRisk.sovereignDefaultSpreads).toBe("function");
+      expect(typeof client.creditRisk.corporateCmdi).toBe("function");
+      expect(typeof client.creditRisk.corporateHqmYields).toBe("function");
+      expect(typeof client.creditRisk.cdsMarketAggregates).toBe("function");
+    });
+
+    it("exposes sanctions as a direct property", () => {
+      const client = createClient();
+      expect(client.sanctions).toBeDefined();
+      expect(typeof client.sanctions.entities).toBe("function");
+      expect(typeof client.sanctions.vessels).toBe("function");
+      expect(typeof client.sanctions.programs).toBe("function");
+      expect(typeof client.sanctions.sources).toBe("function");
+    });
+
+    it("exposes interestRates as a direct property", () => {
+      const client = createClient();
+      expect(client.interestRates).toBeDefined();
+      expect(typeof client.interestRates.referenceRates).toBe("function");
+      expect(typeof client.interestRates.policyRates).toBe("function");
+      expect(typeof client.interestRates.fundingStress).toBe("function");
+    });
+  });
+
+  // ── Delegation: Credit & Sovereign Risk ─────────────────────────────────
+
+  describe("Credit & Sovereign Risk delegation", () => {
+    it("sovereignRiskPremium() calls /credit-risk/sovereign/risk-premium", async () => {
+      const client = createClient();
+      await client.sovereignRiskPremium({ "filter[country]": "USA" });
+
+      const url = getCalledUrl(fetch);
+      expect(url).toContain("/credit-risk/sovereign/risk-premium");
+      expect(url).toContain(encodeURIComponent("filter[country]"));
+    });
+
+    it("sovereignCreditRatings() calls /credit-risk/sovereign/credit-ratings", async () => {
+      const client = createClient();
+      await client.sovereignCreditRatings({ "filter[country]": "USA" });
+
+      expect(getCalledUrl(fetch)).toContain("/credit-risk/sovereign/credit-ratings");
+    });
+
+    it("sovereignCdsSpreads() calls /credit-risk/sovereign/cds-spreads", async () => {
+      const client = createClient();
+      await client.sovereignCdsSpreads({ "filter[country]": "USA" });
+
+      expect(getCalledUrl(fetch)).toContain("/credit-risk/sovereign/cds-spreads");
+    });
+
+    it("sovereignDefaultSpreads() calls /credit-risk/sovereign/default-spreads", async () => {
+      const client = createClient();
+      await client.sovereignDefaultSpreads({ "filter[rating]": "Aaa" });
+
+      expect(getCalledUrl(fetch)).toContain("/credit-risk/sovereign/default-spreads");
+    });
+
+    it("corporateCmdi() calls /credit-risk/corporate/cmdi", async () => {
+      const client = createClient();
+      await client.corporateCmdi({ "filter[from]": "2024-01-01" });
+
+      const url = getCalledUrl(fetch);
+      expect(url).toContain("/credit-risk/corporate/cmdi");
+    });
+
+    it("corporateHqmYields() calls /credit-risk/corporate/hqm-yields", async () => {
+      const client = createClient();
+      await client.corporateHqmYields({ "filter[type]": "spot" });
+
+      const url = getCalledUrl(fetch);
+      expect(url).toContain("/credit-risk/corporate/hqm-yields");
+    });
+
+    it("cdsMarketAggregates() calls /credit-risk/cds-market/aggregates", async () => {
+      const client = createClient();
+      await client.cdsMarketAggregates({ "filter[metric]": "gross_notional" });
+
+      expect(getCalledUrl(fetch)).toContain("/credit-risk/cds-market/aggregates");
+    });
+
+    it("creditRisk.sovereignRiskPremium() (direct property) calls the same endpoint", async () => {
+      const client = createClient();
+      await client.creditRisk.sovereignRiskPremium();
+
+      expect(getCalledUrl(fetch)).toContain("/credit-risk/sovereign/risk-premium");
+    });
+  });
+
+  // ── Delegation: Sanctions ───────────────────────────────────────────────
+
+  describe("Sanctions delegation", () => {
+    it("sanctionsEntities() calls /sanctions/entities", async () => {
+      const client = createClient();
+      await client.sanctionsEntities({ "filter[country]": "RU" });
+
+      expect(getCalledUrl(fetch)).toContain("/sanctions/entities");
+    });
+
+    it("sanctionsVessels() calls /sanctions/vessels", async () => {
+      const client = createClient();
+      await client.sanctionsVessels({ "filter[flag]": "PA" });
+
+      expect(getCalledUrl(fetch)).toContain("/sanctions/vessels");
+    });
+
+    it("sanctionsPrograms() calls /sanctions/programs", async () => {
+      const client = createClient();
+      await client.sanctionsPrograms();
+
+      expect(getCalledUrl(fetch)).toContain("/sanctions/programs");
+    });
+
+    it("sanctionsSources() calls /sanctions/sources", async () => {
+      const client = createClient();
+      await client.sanctionsSources();
+
+      expect(getCalledUrl(fetch)).toContain("/sanctions/sources");
+    });
+
+    it("sanctions.entities() (direct property) calls the same endpoint", async () => {
+      const client = createClient();
+      await client.sanctions.entities();
+
+      expect(getCalledUrl(fetch)).toContain("/sanctions/entities");
+    });
+  });
+
+  // ── Delegation: Interest Rates & Spreads ────────────────────────────────
+
+  describe("Interest Rates & Spreads delegation", () => {
+    it("referenceRates() calls /rates/reference-rates", async () => {
+      const client = createClient();
+      await client.referenceRates({ "filter[currency]": "USD" });
+
+      const url = getCalledUrl(fetch);
+      expect(url).toContain("/rates/reference-rates");
+    });
+
+    it("policyRates() calls /rates/policy-rates", async () => {
+      const client = createClient();
+      await client.policyRates({ "filter[country]": "US" });
+
+      expect(getCalledUrl(fetch)).toContain("/rates/policy-rates");
+    });
+
+    it("fundingStress() calls /spreads/funding-stress", async () => {
+      const client = createClient();
+      await client.fundingStress({ "filter[code]": "SOFR_OIS" });
+
+      expect(getCalledUrl(fetch)).toContain("/spreads/funding-stress");
+    });
+
+    it("interestRates.referenceRates() (direct property) calls the same endpoint", async () => {
+      const client = createClient();
+      await client.interestRates.referenceRates();
+
+      expect(getCalledUrl(fetch)).toContain("/rates/reference-rates");
+    });
+  });
 });

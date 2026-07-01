@@ -985,6 +985,324 @@ export interface CommodityHistoryResponse {
   };
 }
 
+// ── Credit & Sovereign Risk ──
+
+/** Envelope shared by Credit & Sovereign Risk endpoints */
+export interface CreditRiskResponse<T> {
+  data: T[];
+  meta: {
+    total?: number;
+    limit?: number;
+    offset?: number;
+    [key: string]: unknown;
+  };
+  links: {
+    next?: string | null;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+export interface SovereignRiskPremiumParams {
+  "filter[country]"?: string;
+  "filter[region]"?: string;
+  "filter[as_of]"?: DateString;
+  "page[offset]"?: number;
+  "page[limit]"?: number;
+}
+
+export interface SovereignRiskPremiumItem {
+  country_iso3: string;
+  country_name: string;
+  as_of_date: string;
+  moodys_rating: string;
+  adj_default_spread: number;
+  country_risk_premium: number;
+  equity_risk_premium: number;
+  corporate_tax_rate: number;
+  sovereign_cds: number | null;
+  source: string;
+  [key: string]: unknown;
+}
+
+export interface SovereignCreditRatingsParams {
+  "filter[country]"?: string;
+  "filter[as_of]"?: DateString;
+  "page[offset]"?: number;
+  "page[limit]"?: number;
+}
+
+export interface SovereignCreditRatingItem {
+  country_iso3: string;
+  country_name: string;
+  as_of_date: string;
+  moodys_rating: string;
+  sp_rating: string;
+  fitch_rating: string;
+  source: string;
+  [key: string]: unknown;
+}
+
+export interface SovereignCdsSpreadsParams {
+  "filter[country]"?: string;
+  "filter[as_of]"?: DateString;
+  "page[offset]"?: number;
+  "page[limit]"?: number;
+}
+
+export interface SovereignCdsSpreadItem {
+  country_iso3: string;
+  country_name: string;
+  as_of_date: string;
+  moodys_rating: string;
+  cds_spread: number | null;
+  cds_spread_net_of_switzerland: number | null;
+  source: string;
+  [key: string]: unknown;
+}
+
+export interface SovereignDefaultSpreadsParams {
+  "filter[rating]"?: string;
+  "filter[as_of]"?: DateString;
+  "page[offset]"?: number;
+  "page[limit]"?: number;
+}
+
+export interface SovereignDefaultSpreadItem {
+  rating: string;
+  as_of_date: string;
+  default_spread: number;
+  source: string;
+  [key: string]: unknown;
+}
+
+export interface CorporateCmdiParams {
+  "filter[from]"?: DateString;
+  "filter[to]"?: DateString;
+  "page[offset]"?: number;
+  "page[limit]"?: number;
+}
+
+export interface CorporateCmdiItem {
+  as_of_date: string;
+  market_cmdi: number;
+  ig_cmdi: number;
+  hy_cmdi: number;
+  source: string;
+  [key: string]: unknown;
+}
+
+export interface CorporateHqmYieldsParams {
+  "filter[tenor]"?: number | string;
+  "filter[type]"?: "par" | "spot";
+  "filter[from]"?: DateString;
+  "filter[to]"?: DateString;
+  "page[offset]"?: number;
+  "page[limit]"?: number;
+}
+
+export interface CorporateHqmYieldItem {
+  series_id: string;
+  tenor_years: number;
+  yield_type: string;
+  as_of_date: string;
+  yield_value: number;
+  source: string;
+  [key: string]: unknown;
+}
+
+export interface CdsMarketAggregatesParams {
+  "filter[metric]"?: "gross_notional" | string;
+  "filter[dimension]"?: "grade" | "cleared_status" | string;
+  "filter[from]"?: DateString;
+  "filter[to]"?: DateString;
+  "page[offset]"?: number;
+  "page[limit]"?: number;
+}
+
+export interface CdsMarketAggregateItem {
+  as_of_date: string;
+  release_date: string;
+  metric: string;
+  breakdown_dimension: string;
+  breakdown_value: string;
+  region: string;
+  usd_notional_mn: number;
+  source: string;
+  [key: string]: unknown;
+}
+
+// ── Sanctions ──
+
+/** Envelope shared by Sanctions endpoints */
+export interface SanctionsResponse<T> {
+  data: T[];
+  meta: {
+    total?: number;
+    limit?: number;
+    offset?: number;
+    [key: string]: unknown;
+  };
+  links: {
+    next?: string | null;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+export interface SanctionsEntitiesParams {
+  "filter[name]"?: string;
+  "filter[program]"?: string;
+  "filter[country]"?: string;
+  "filter[source]"?: string;
+  "filter[entity_type]"?: string;
+  "filter[is_active]"?: boolean | 0 | 1;
+  "page[offset]"?: number;
+  "page[limit]"?: number;
+}
+
+export interface SanctionsEntityItem {
+  source: string;
+  source_uid: string;
+  entity_type: string;
+  name: string;
+  programs: string[];
+  country: string;
+  remarks: string;
+  listed_date: string;
+  is_active: boolean;
+  aliases: string[];
+  identifiers: Record<string, unknown>[];
+  [key: string]: unknown;
+}
+
+export interface SanctionsVesselsParams {
+  "filter[name]"?: string;
+  "filter[imo_number]"?: string;
+  "filter[flag]"?: string;
+  "filter[program]"?: string;
+  "filter[country]"?: string;
+  "filter[source]"?: string;
+  "page[offset]"?: number;
+  "page[limit]"?: number;
+}
+
+export interface SanctionsVesselItem {
+  call_sign: string;
+  vessel_type: string;
+  flag: string;
+  tonnage: number;
+  gross_tonnage: number;
+  owner: string;
+  imo_number: string;
+  mmsi: string;
+  entity_source_uid: string;
+  entity_name: string;
+  source: string;
+  programs: string[];
+  country: string;
+  is_active: boolean;
+  [key: string]: unknown;
+}
+
+export interface SanctionsProgramsParams {
+  "page[offset]"?: number;
+  "page[limit]"?: number;
+}
+
+export interface SanctionsProgramItem {
+  program: string;
+  count: number;
+  [key: string]: unknown;
+}
+
+export interface SanctionsSourcesParams {
+  "page[offset]"?: number;
+  "page[limit]"?: number;
+}
+
+export interface SanctionsSourceItem {
+  name: string;
+  [key: string]: unknown;
+}
+
+// ── Interest Rates & Spreads ──
+
+/** Envelope shared by Interest Rates & Spreads endpoints */
+export interface InterestRatesResponse<T> {
+  data: T[];
+  meta: {
+    total?: number;
+    limit?: number;
+    offset?: number;
+    [key: string]: unknown;
+  };
+  links: {
+    next?: string | null;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+export interface ReferenceRatesParams {
+  "filter[code]"?: string;
+  "filter[currency]"?: "USD" | "GBP" | "EUR";
+  "filter[from]"?: DateString;
+  "filter[to]"?: DateString;
+  "page[offset]"?: number;
+  "page[limit]"?: number;
+}
+
+export interface ReferenceRateItem {
+  date: string;
+  code: string;
+  currency: string;
+  rate_type: string;
+  rate: number;
+  source: string;
+  source_series_id: string;
+  [key: string]: unknown;
+}
+
+export interface PolicyRatesParams {
+  "filter[code]"?: string;
+  "filter[country]"?: string;
+  "filter[central_bank]"?: string;
+  "filter[from]"?: DateString;
+  "filter[to]"?: DateString;
+  "page[offset]"?: number;
+  "page[limit]"?: number;
+}
+
+export interface PolicyRateItem {
+  date: string;
+  code: string;
+  country: string;
+  central_bank: string;
+  rate: number;
+  source: string;
+  source_series_id: string;
+  [key: string]: unknown;
+}
+
+export interface FundingStressParams {
+  "filter[code]"?: string;
+  "filter[from]"?: DateString;
+  "filter[to]"?: DateString;
+}
+
+export interface FundingStressItem {
+  date: string;
+  code: string;
+  value_bps: number;
+  formula: string;
+  leg_a: string;
+  leg_b: string;
+  leg_a_rate: number;
+  leg_b_rate: number;
+  [key: string]: unknown;
+}
+
 // ── WebSocket ──
 
 export type WebSocketFeed = "us" | "us-quote" | "forex" | "crypto";
