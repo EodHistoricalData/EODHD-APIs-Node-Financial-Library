@@ -710,18 +710,35 @@ describe("EODHDClient", () => {
   // ── Delegation: Sanctions ───────────────────────────────────────────────
 
   describe("Sanctions delegation", () => {
-    it("sanctionsEntities() calls /sanctions/entities", async () => {
+    it("sanctionsEntities() calls /sanctions/entities with bare query params", async () => {
       const client = createClient();
-      await client.sanctionsEntities({ "filter[country]": "RU" });
+      await client.sanctionsEntities({ country: "RU", type: "individual", q: "ivan", active: true });
 
-      expect(getCalledUrl(fetch)).toContain("/sanctions/entities");
+      const url = getCalledUrl(fetch);
+      expect(url).toContain("/sanctions/entities");
+      // Bare query params, NOT filter[...]
+      expect(url).toContain("country=RU");
+      expect(url).toContain("type=individual");
+      expect(url).toContain("q=ivan");
+      expect(url).toContain("active=true");
+      // No legacy filter[...] keys (check both raw and URL-encoded bracket forms)
+      expect(url).not.toContain("filter[");
+      expect(url).not.toContain("filter%5B");
     });
 
-    it("sanctionsVessels() calls /sanctions/vessels", async () => {
+    it("sanctionsVessels() calls /sanctions/vessels with bare query params", async () => {
       const client = createClient();
-      await client.sanctionsVessels({ "filter[flag]": "PA" });
+      await client.sanctionsVessels({ flag: "PA", imo: "9074729", vessel_type: "tanker" });
 
-      expect(getCalledUrl(fetch)).toContain("/sanctions/vessels");
+      const url = getCalledUrl(fetch);
+      expect(url).toContain("/sanctions/vessels");
+      // Bare query params, NOT filter[...]
+      expect(url).toContain("flag=PA");
+      expect(url).toContain("imo=9074729");
+      expect(url).toContain("vessel_type=tanker");
+      // No legacy filter[...] keys (check both raw and URL-encoded bracket forms)
+      expect(url).not.toContain("filter[");
+      expect(url).not.toContain("filter%5B");
     });
 
     it("sanctionsPrograms() calls /sanctions/programs", async () => {

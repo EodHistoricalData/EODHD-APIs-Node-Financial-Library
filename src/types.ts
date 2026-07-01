@@ -1151,12 +1151,16 @@ export interface SanctionsResponse<T> {
 }
 
 export interface SanctionsEntitiesParams {
-  "filter[name]"?: string;
-  "filter[program]"?: string;
-  "filter[country]"?: string;
-  "filter[source]"?: string;
-  "filter[entity_type]"?: string;
-  "filter[is_active]"?: boolean | 0 | 1;
+  /** Data source. Currently only `"ofac"` is supported. */
+  source?: "ofac";
+  /** Entity type filter. */
+  type?: "individual" | "entity" | "vessel" | "aircraft";
+  program?: string;
+  country?: string;
+  /** Free-text search (minimum 2 characters). */
+  q?: string;
+  /** Active status filter. Serializes to the string `"true"` or `"false"` on the wire. */
+  active?: boolean | "true" | "false";
   "page[offset]"?: number;
   "page[limit]"?: number;
 }
@@ -1177,12 +1181,14 @@ export interface SanctionsEntityItem {
 }
 
 export interface SanctionsVesselsParams {
-  "filter[name]"?: string;
-  "filter[imo_number]"?: string;
-  "filter[flag]"?: string;
-  "filter[program]"?: string;
-  "filter[country]"?: string;
-  "filter[source]"?: string;
+  /** Data source. Currently only `"ofac"` is supported. */
+  source?: "ofac";
+  imo?: string;
+  flag?: string;
+  vessel_type?: string;
+  /** Free-text search. */
+  q?: string;
+  program?: string;
   "page[offset]"?: number;
   "page[limit]"?: number;
 }

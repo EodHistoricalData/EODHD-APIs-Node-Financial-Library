@@ -25,13 +25,13 @@ export class SanctionsApi {
   /**
    * Fetch sanctioned entities.
    *
-   * @param params - Optional name, program, country, source, entity_type, is_active filters, and pagination
+   * @param params - Optional source, type, program, country, q (search), active filters, and pagination
    * @returns Envelope with sanctioned entity items, meta, and links
    * @throws {@link EODHDError} on API error
    *
    * @example
    * ```ts
-   * const res = await client.sanctions.entities({ 'filter[country]': 'RU' });
+   * const res = await client.sanctions.entities({ country: 'RU', type: 'individual' });
    * console.log(res.data[0].name, res.data[0].programs);
    * ```
    */
@@ -42,13 +42,13 @@ export class SanctionsApi {
   /**
    * Fetch sanctioned vessels.
    *
-   * @param params - Optional name, imo_number, flag, program, country, source filters, and pagination
+   * @param params - Optional source, imo, flag, vessel_type, q (search), program filters, and pagination
    * @returns Envelope with sanctioned vessel items, meta, and links
    * @throws {@link EODHDError} on API error
    *
    * @example
    * ```ts
-   * const res = await client.sanctions.vessels({ 'filter[flag]': 'PA' });
+   * const res = await client.sanctions.vessels({ flag: 'PA' });
    * console.log(res.data[0].imo_number, res.data[0].entity_name);
    * ```
    */
