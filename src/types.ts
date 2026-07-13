@@ -985,6 +985,69 @@ export interface CommodityHistoryResponse {
   };
 }
 
+// ── ASX Corporate Actions ──
+
+/** Envelope shared by the ASX corporate actions endpoint (JSON:API style) */
+export interface AsxCorporateActionsResponse<T> {
+  data: T[];
+  meta: {
+    total?: number;
+    page?: {
+      offset?: number;
+      limit?: number;
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  };
+  links: {
+    next?: string | null;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+/** Corporate action category supported by the ASX corporate actions endpoint */
+export type AsxCorporateActionType =
+  | "dividends"
+  | "splits"
+  | "bonus-issues"
+  | "rights-issues"
+  | "buybacks"
+  | "capital-returns"
+  | "spp"
+  | "other";
+
+export interface AsxCorporateActionsParams {
+  /** Corporate action category. */
+  type?: AsxCorporateActionType;
+  /** ASX ticker with `.AU` suffix, e.g. `"PMV.AU"`. */
+  symbol?: string;
+  /** Inclusive start date (YYYY-MM-DD). */
+  date_from?: DateString;
+  /** Inclusive end date (YYYY-MM-DD). */
+  date_to?: DateString;
+  /** Pagination offset (default 0). */
+  "page[offset]"?: number;
+  /** Pagination page size, 1-1000 (default 100). */
+  "page[limit]"?: number;
+}
+
+export interface AsxCorporateActionItem {
+  code: string;
+  date: string;
+  value: number;
+  period: string | null;
+  currency: string;
+  exchange: string;
+  recordDate: string | null;
+  paymentDate: string | null;
+  declarationDate: string | null;
+  unadjustedValue: number;
+  /** Type-specific extra fields (e.g. franking, DRP, ISIN for dividends). */
+  _asx_extra?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 // ── WebSocket ──
 
 export type WebSocketFeed = "us" | "us-quote" | "forex" | "crypto";

@@ -609,4 +609,55 @@ describe("EODHDClient", () => {
       expect(url).toContain("interval=daily");
     });
   });
+
+  // ── Sub-module exposure: ASX ─────────────────────────────────────────────
+
+  describe("sub-module exposure: asx", () => {
+    it("exposes asx as a direct property", () => {
+      const client = createClient();
+      expect(client.asx).toBeDefined();
+      expect(typeof client.asx.corporateActions).toBe("function");
+    });
+  });
+
+  // ── Delegation: ASX Corporate Actions ────────────────────────────────────
+
+  describe("ASX Corporate Actions delegation", () => {
+    it("asxCorporateActions() calls /asx-corporate-actions with bare query params", async () => {
+      const client = createClient();
+      await client.asxCorporateActions({
+        type: "dividends",
+        symbol: "PMV.AU",
+        date_from: "2024-01-01",
+        date_to: "2024-12-31",
+      });
+
+      const url = getCalledUrl(fetch);
+      expect(url).toContain("/asx-corporate-actions");
+      // Bare query params, NOT filter[...]
+      expect(url).toContain("type=dividends");
+      expect(url).toContain("symbol=PMV.AU");
+      expect(url).toContain("date_from=2024-01-01");
+      expect(url).toContain("date_to=2024-12-31");
+      expect(url).not.toContain("filter[");
+      expect(url).not.toContain("filter%5B");
+    });
+
+    it("asxCorporateActions() serializes page[offset] and page[limit]", async () => {
+      const client = createClient();
+      await client.asxCorporateActions({ "page[offset]": 20, "page[limit]": 50 });
+
+      const url = getCalledUrl(fetch);
+      expect(url).toContain("/asx-corporate-actions");
+      expect(url).toContain(encodeURIComponent("page[offset]"));
+      expect(url).toContain(encodeURIComponent("page[limit]"));
+    });
+
+    it("asx.corporateActions() (direct property) calls the same endpoint", async () => {
+      const client = createClient();
+      await client.asx.corporateActions();
+
+      expect(getCalledUrl(fetch)).toContain("/asx-corporate-actions");
+    });
+  });
 });
