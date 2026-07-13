@@ -1,3 +1,4 @@
+import { AsxApi } from "./api/asx.js";
 import { CalendarApi } from "./api/calendar.js";
 import { CboeApi } from "./api/cboe.js";
 import { CommoditiesApi } from "./api/commodities.js";
@@ -19,6 +20,9 @@ import { PraamsApi } from "./marketplace/praams.js";
 import { UnicornBayApi } from "./marketplace/unicornbay.js";
 import { DEFAULT_RETRY } from "./retry.js";
 import type {
+  AsxCorporateActionItem,
+  AsxCorporateActionsParams,
+  AsxCorporateActionsResponse,
   BulkEodDataPoint,
   BulkEodParams,
   BulkFundamentalsItem,
@@ -171,6 +175,20 @@ export class EODHDClient {
   readonly commodities: CommoditiesApi;
 
   /**
+   * ASX Corporate Actions: Australian Securities Exchange dividends, splits,
+   * bonus/rights issues, buybacks, capital returns, SPP, and other events.
+   *
+   * @example
+   * ```ts
+   * const res = await client.asx.corporateActions({ type: 'dividends', symbol: 'PMV.AU' });
+   * console.log(res.data[0].code, res.data[0].value);
+   * ```
+   *
+   * @see https://eodhd.com/financial-apis/
+   */
+  readonly asx: AsxApi;
+
+  /**
    * Marketplace data providers (Unicorn Bay, Praams, InvestVerte).
    *
    * @example
@@ -233,6 +251,7 @@ export class EODHDClient {
     this.treasury = new TreasuryApi(this.http);
     this.cboe = new CboeApi(this.http);
     this.commodities = new CommoditiesApi(this.http);
+    this.asx = new AsxApi(this.http);
     this._screening = new ScreeningApi(this.http);
     this._corporate = new CorporateApi(this.http);
     this._user = new UserApi(this.http);
@@ -742,6 +761,28 @@ export class EODHDClient {
    */
   logoSvg(symbol: Ticker): Promise<ArrayBuffer> {
     return this._fundamentals.logoSvg(symbol);
+  }
+
+  // ── ASX Corporate Actions ──
+
+  /**
+   * Fetch ASX corporate actions (dividends, splits, bonus/rights issues,
+   * buybacks, capital returns, SPP, and other events).
+   *
+   * @param params - Optional type, symbol (`.AU` ticker), date_from/date_to filters, and pagination
+   * @returns Envelope with corporate action items, meta, and links
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const res = await client.asxCorporateActions({ type: 'dividends', symbol: 'PMV.AU' });
+   * console.log(res.data[0].code, res.data[0].value);
+   * ```
+   */
+  asxCorporateActions(
+    params?: AsxCorporateActionsParams,
+  ): Promise<AsxCorporateActionsResponse<AsxCorporateActionItem>> {
+    return this.asx.corporateActions(params);
   }
 
   // ── WebSocket ──
