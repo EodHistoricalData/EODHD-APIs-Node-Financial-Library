@@ -6,6 +6,7 @@ import { CorporateApi } from "./api/corporate.js";
 import { EodApi } from "./api/eod.js";
 import { ExchangesApi } from "./api/exchanges.js";
 import { FundamentalsApi } from "./api/fundamentals.js";
+import { GovernmentApi } from "./api/government.js";
 import { MacroApi } from "./api/macro.js";
 import { NewsApi } from "./api/news.js";
 import { ScreeningApi } from "./api/screening.js";
@@ -146,6 +147,18 @@ export class EODHDClient {
   readonly treasury: TreasuryApi;
 
   /**
+   * Government disclosure data — US congressional stock trades (STOCK Act).
+   *
+   * @example
+   * ```ts
+   * const res = await client.government.congressionalTrades({ chamber: "senate" });
+   * ```
+   *
+   * @see https://eodhd.com/financial-apis/congressional-trades-api
+   */
+  readonly government: GovernmentApi;
+
+  /**
    * CBOE Europe indices.
    *
    * @example
@@ -233,6 +246,7 @@ export class EODHDClient {
     this.treasury = new TreasuryApi(this.http);
     this.cboe = new CboeApi(this.http);
     this.commodities = new CommoditiesApi(this.http);
+    this.government = new GovernmentApi(this.http);
     this._screening = new ScreeningApi(this.http);
     this._corporate = new CorporateApi(this.http);
     this._user = new UserApi(this.http);

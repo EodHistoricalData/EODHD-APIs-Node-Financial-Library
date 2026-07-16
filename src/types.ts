@@ -985,6 +985,87 @@ export interface CommodityHistoryResponse {
   };
 }
 
+// ── Congressional Trades ──
+
+export interface CongressionalTradesParams {
+  /** Filter by a single ticker symbol, e.g. "AAPL". */
+  symbol?: string;
+  /** Filter by chamber of Congress. */
+  chamber?: "senate" | "house";
+  /** Filter by a member's Bioguide ID, e.g. "S000250". */
+  bioguide_id?: string;
+  /** One or more transaction types, comma-separated, e.g. "purchase,sale". */
+  transaction_type?: string;
+  /** Earliest transaction date, YYYY-MM-DD, inclusive. */
+  transaction_date_from?: string;
+  /** Latest transaction date, YYYY-MM-DD, inclusive. */
+  transaction_date_to?: string;
+  /** Earliest disclosure date, YYYY-MM-DD, inclusive. */
+  disclosure_date_from?: string;
+  /** Latest disclosure date, YYYY-MM-DD, inclusive. */
+  disclosure_date_to?: string;
+  "page[limit]"?: number;
+  "page[offset]"?: number;
+}
+
+export interface CongressionalTradeMember {
+  bioguide_id: string | null;
+  first_name: string;
+  last_name: string;
+  full_name: string;
+  office: string | null;
+  state: string | null;
+  party: string | null;
+  district: number | null;
+}
+
+export interface CongressionalTradeAsset {
+  symbol: string | null;
+  description: string;
+  asset_type: string;
+}
+
+export interface CongressionalTradeTransaction {
+  type: string;
+  transaction_date: string;
+  disclosure_date: string;
+  owner: string | null;
+  amount_range: string;
+  amount_low: number | null;
+  amount_high: number | null;
+  days_to_disclose: number;
+  is_late: boolean;
+  comment: string | null;
+}
+
+export interface CongressionalTradeSource {
+  filing_url: string;
+  source_system: string;
+  filing_identifier: string;
+}
+
+export interface CongressionalTrade {
+  chamber: string;
+  member: CongressionalTradeMember;
+  asset: CongressionalTradeAsset;
+  transaction: CongressionalTradeTransaction;
+  source: CongressionalTradeSource;
+}
+
+export interface CongressionalTradesResponse {
+  data: CongressionalTrade[];
+  meta: {
+    total: number;
+    page: {
+      offset: number;
+      limit: number;
+    };
+  };
+  links: {
+    next: string | null;
+  };
+}
+
 // ── WebSocket ──
 
 export type WebSocketFeed = "us" | "us-quote" | "forex" | "crypto";
