@@ -167,6 +167,12 @@ describe("EODHDClient", () => {
       expect(typeof client.treasury.realYieldRates).toBe("function");
     });
 
+    it("exposes government as a direct property", () => {
+      const client = createClient();
+      expect(client.government).toBeDefined();
+      expect(typeof client.government.congressionalTrades).toBe("function");
+    });
+
     it("exposes cboe as a direct property", () => {
       const client = createClient();
       expect(client.cboe).toBeDefined();
@@ -564,6 +570,18 @@ describe("EODHDClient", () => {
       await client.treasury.realYieldRates();
 
       expect(getCalledUrl(fetch)).toContain("/ust/real-yield-rates");
+    });
+  });
+
+  describe("Government (via direct property)", () => {
+    it("government.congressionalTrades() calls /congressional-trades with filters", async () => {
+      const client = createClient();
+      await client.government.congressionalTrades({ chamber: "senate", "page[limit]": 5 });
+
+      const url = getCalledUrl(fetch);
+      expect(url).toContain("/congressional-trades");
+      expect(url).toContain("chamber=senate");
+      expect(url).toContain("page%5Blimit%5D=5");
     });
   });
 
