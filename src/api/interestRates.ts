@@ -2,6 +2,7 @@ import type { HttpClient } from "../http.js";
 import type {
   FundingStressItem,
   FundingStressParams,
+  FundingStressResponse,
   InterestRatesResponse,
   PolicyRateItem,
   PolicyRatesParams,
@@ -15,7 +16,7 @@ import type {
  *
  * Accessed via `client.interestRates`.
  *
- * @see https://eodhd.com/financial-apis/
+ * @see https://eodhd.com/financial-apis/interest-rates-api-sofr-fed-funds-ecb-boe-policy-rates
  */
 export class InterestRatesApi {
   constructor(private http: HttpClient) {}
@@ -23,7 +24,7 @@ export class InterestRatesApi {
   /**
    * Fetch benchmark reference rates (e.g. SOFR, SONIA, ESTR).
    *
-   * @param params - Optional code, currency (USD|GBP|EUR), from/to date filters, and pagination
+   * @param params - Optional code, supported currency (USD|GBP|EUR), from/to date filters, and pagination
    * @returns Envelope with reference rate items, meta, and links
    * @throws {@link EODHDError} on API error
    *
@@ -65,11 +66,11 @@ export class InterestRatesApi {
    *
    * @example
    * ```ts
-   * const res = await client.interestRates.fundingStress({ 'filter[code]': 'SOFR_OIS' });
+   * const res = await client.interestRates.fundingStress({ 'filter[code]': 'EFFR_SOFR' });
    * console.log(res.data[0].value_bps, res.data[0].formula);
    * ```
    */
-  async fundingStress(params: FundingStressParams = {}): Promise<InterestRatesResponse<FundingStressItem>> {
+  async fundingStress(params: FundingStressParams = {}): Promise<FundingStressResponse<FundingStressItem>> {
     return this.http.get("/spreads/funding-stress", params);
   }
 }

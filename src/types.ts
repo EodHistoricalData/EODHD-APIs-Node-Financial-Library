@@ -985,35 +985,79 @@ export interface CommodityHistoryResponse {
   };
 }
 
+// ── Shared JSON:API envelope ──
+
+/** Pagination block nested under `meta.page` on paginated endpoints. */
+export interface JsonApiPageMeta {
+  offset: number;
+  limit: number;
+  [key: string]: unknown;
+}
+
+/** `meta` object returned by paginated endpoints (pagination lives under `page`). */
+export interface JsonApiMeta {
+  total: number;
+  page: JsonApiPageMeta;
+  [key: string]: unknown;
+}
+
+/** `links` object returned by paginated endpoints. */
+export interface JsonApiLinks {
+  next: string | null;
+  [key: string]: unknown;
+}
+
+/** `meta` object returned by an unpaginated endpoint with a total count. */
+export interface JsonApiUnpaginatedMeta {
+  total: number;
+  [key: string]: unknown;
+}
+
+/** Query parameters shared by paginated JSON:API endpoints. */
+export interface JsonApiPaginationParams {
+  /** Number of records to skip. Minimum and default: 0. */
+  "page[offset]"?: number;
+  /** Number of records to return. Minimum: 1; maximum: 100; default: 20. */
+  "page[limit]"?: number;
+}
+
+/**
+ * Envelope for endpoints without pagination (sanctions programs/sources,
+ * funding-stress spreads).
+ */
+export interface UnpaginatedResponse<T, TMeta extends JsonApiUnpaginatedMeta | []> {
+  data: T[];
+  meta: TMeta;
+  links: [];
+  [key: string]: unknown;
+}
+
+/** Response returned by the unpaginated sanctions programs and sources endpoints. */
+export type SanctionsListResponse<T> = UnpaginatedResponse<T, []>;
+
+/** Response returned by the unpaginated funding-stress endpoint. */
+export type FundingStressResponse<T> = UnpaginatedResponse<T, JsonApiUnpaginatedMeta>;
+
 // ── Credit & Sovereign Risk ──
 
 /** Envelope shared by Credit & Sovereign Risk endpoints */
 export interface CreditRiskResponse<T> {
   data: T[];
-  meta: {
-    total?: number;
-    limit?: number;
-    offset?: number;
-    [key: string]: unknown;
-  };
-  links: {
-    next?: string | null;
-    [key: string]: unknown;
-  };
+  meta: JsonApiMeta;
+  links: JsonApiLinks;
   [key: string]: unknown;
 }
 
-export interface SovereignRiskPremiumParams {
+export interface SovereignRiskPremiumParams extends JsonApiPaginationParams {
   "filter[country]"?: string;
   "filter[region]"?: string;
   "filter[as_of]"?: DateString;
-  "page[offset]"?: number;
-  "page[limit]"?: number;
 }
 
 export interface SovereignRiskPremiumItem {
   country_iso3: string;
   country_name: string;
+  region?: string;
   as_of_date: string;
   moodys_rating: string;
   adj_default_spread: number;
@@ -1025,11 +1069,9 @@ export interface SovereignRiskPremiumItem {
   [key: string]: unknown;
 }
 
-export interface SovereignCreditRatingsParams {
+export interface SovereignCreditRatingsParams extends JsonApiPaginationParams {
   "filter[country]"?: string;
   "filter[as_of]"?: DateString;
-  "page[offset]"?: number;
-  "page[limit]"?: number;
 }
 
 export interface SovereignCreditRatingItem {
@@ -1043,11 +1085,9 @@ export interface SovereignCreditRatingItem {
   [key: string]: unknown;
 }
 
-export interface SovereignCdsSpreadsParams {
+export interface SovereignCdsSpreadsParams extends JsonApiPaginationParams {
   "filter[country]"?: string;
   "filter[as_of]"?: DateString;
-  "page[offset]"?: number;
-  "page[limit]"?: number;
 }
 
 export interface SovereignCdsSpreadItem {
@@ -1061,11 +1101,9 @@ export interface SovereignCdsSpreadItem {
   [key: string]: unknown;
 }
 
-export interface SovereignDefaultSpreadsParams {
+export interface SovereignDefaultSpreadsParams extends JsonApiPaginationParams {
   "filter[rating]"?: string;
   "filter[as_of]"?: DateString;
-  "page[offset]"?: number;
-  "page[limit]"?: number;
 }
 
 export interface SovereignDefaultSpreadItem {
@@ -1076,11 +1114,9 @@ export interface SovereignDefaultSpreadItem {
   [key: string]: unknown;
 }
 
-export interface CorporateCmdiParams {
+export interface CorporateCmdiParams extends JsonApiPaginationParams {
   "filter[from]"?: DateString;
   "filter[to]"?: DateString;
-  "page[offset]"?: number;
-  "page[limit]"?: number;
 }
 
 export interface CorporateCmdiItem {
@@ -1092,13 +1128,13 @@ export interface CorporateCmdiItem {
   [key: string]: unknown;
 }
 
-export interface CorporateHqmYieldsParams {
-  "filter[tenor]"?: number | string;
-  "filter[type]"?: "par" | "spot";
+export interface CorporateHqmYieldsParams extends JsonApiPaginationParams {
+  /** One tenor or a comma-separated list of tenors in years, e.g. `"10"` or `"5,10,30"`. */
+  "filter[tenor]"?: string;
+  /** `"par"`, `"spot"`, or a comma-separated combination, e.g. `"spot,par"`. */
+  "filter[type]"?: string;
   "filter[from]"?: DateString;
   "filter[to]"?: DateString;
-  "page[offset]"?: number;
-  "page[limit]"?: number;
 }
 
 export interface CorporateHqmYieldItem {
@@ -1111,13 +1147,15 @@ export interface CorporateHqmYieldItem {
   [key: string]: unknown;
 }
 
-export interface CdsMarketAggregatesParams {
-  "filter[metric]"?: "gross_notional" | string;
-  "filter[dimension]"?: "grade" | "cleared_status" | string;
+export interface CdsMarketAggregatesParams extends JsonApiPaginationParams {
+  "filter[metric]"?: "gross_notional";
+  "filter[dimension]"?: "grade" | "cleared_status";
+  /** Filter by a specific breakdown value (e.g. a grade or cleared status). */
+  "filter[value]"?: string;
+  /** Filter by region (e.g. `"North America"`). */
+  "filter[region]"?: string;
   "filter[from]"?: DateString;
   "filter[to]"?: DateString;
-  "page[offset]"?: number;
-  "page[limit]"?: number;
 }
 
 export interface CdsMarketAggregateItem {
@@ -1134,23 +1172,15 @@ export interface CdsMarketAggregateItem {
 
 // ── Sanctions ──
 
-/** Envelope shared by Sanctions endpoints */
+/** Envelope shared by the paginated Sanctions endpoints (entities, vessels) */
 export interface SanctionsResponse<T> {
   data: T[];
-  meta: {
-    total?: number;
-    limit?: number;
-    offset?: number;
-    [key: string]: unknown;
-  };
-  links: {
-    next?: string | null;
-    [key: string]: unknown;
-  };
+  meta: JsonApiMeta;
+  links: JsonApiLinks;
   [key: string]: unknown;
 }
 
-export interface SanctionsEntitiesParams {
+export interface SanctionsEntitiesParams extends JsonApiPaginationParams {
   /** Data source. Currently only `"ofac"` is supported. */
   source?: "ofac";
   /** Entity type filter. */
@@ -1161,70 +1191,64 @@ export interface SanctionsEntitiesParams {
   q?: string;
   /** Active status filter. Serializes to the string `"true"` or `"false"` on the wire. */
   active?: boolean | "true" | "false";
-  "page[offset]"?: number;
-  "page[limit]"?: number;
 }
 
 export interface SanctionsEntityItem {
+  /** May be omitted by production API responses. */
+  id?: number;
   source: string;
   source_uid: string;
   entity_type: string;
   name: string;
   programs: string[];
-  country: string;
-  remarks: string;
-  listed_date: string;
+  country: string | null;
+  remarks: string | null;
+  listed_date: string | null;
   is_active: boolean;
   aliases: string[];
-  identifiers: Record<string, unknown>[];
+  /**
+   * Identifying details keyed by identifier type, e.g.
+   * `{ "Tax ID No.": ["7704028201"] }`. Serializes as `[]` when empty.
+   */
+  identifiers: Record<string, string[]> | Record<string, unknown>[];
   [key: string]: unknown;
 }
 
-export interface SanctionsVesselsParams {
+export interface SanctionsVesselsParams extends JsonApiPaginationParams {
   /** Data source. Currently only `"ofac"` is supported. */
   source?: "ofac";
   imo?: string;
   flag?: string;
   vessel_type?: string;
-  /** Free-text search. */
+  /** Free-text search (minimum 2 characters). */
   q?: string;
   program?: string;
-  "page[offset]"?: number;
-  "page[limit]"?: number;
 }
 
 export interface SanctionsVesselItem {
-  call_sign: string;
-  vessel_type: string;
-  flag: string;
-  tonnage: number;
-  gross_tonnage: number;
-  owner: string;
-  imo_number: string;
-  mmsi: string;
+  /** May be omitted by production API responses. */
+  id?: number;
+  call_sign: string | null;
+  vessel_type: string | null;
+  flag: string | null;
+  tonnage: number | null;
+  gross_tonnage: number | null;
+  owner: string | null;
+  imo_number: string | null;
+  mmsi: string | null;
   entity_source_uid: string;
   entity_name: string;
   source: string;
   programs: string[];
-  country: string;
+  country: string | null;
   is_active: boolean;
   [key: string]: unknown;
-}
-
-export interface SanctionsProgramsParams {
-  "page[offset]"?: number;
-  "page[limit]"?: number;
 }
 
 export interface SanctionsProgramItem {
   program: string;
   count: number;
   [key: string]: unknown;
-}
-
-export interface SanctionsSourcesParams {
-  "page[offset]"?: number;
-  "page[limit]"?: number;
 }
 
 export interface SanctionsSourceItem {
@@ -1234,29 +1258,20 @@ export interface SanctionsSourceItem {
 
 // ── Interest Rates & Spreads ──
 
-/** Envelope shared by Interest Rates & Spreads endpoints */
+/** Envelope shared by the paginated Interest Rates endpoints (reference rates, policy rates) */
 export interface InterestRatesResponse<T> {
   data: T[];
-  meta: {
-    total?: number;
-    limit?: number;
-    offset?: number;
-    [key: string]: unknown;
-  };
-  links: {
-    next?: string | null;
-    [key: string]: unknown;
-  };
+  meta: JsonApiMeta;
+  links: JsonApiLinks;
   [key: string]: unknown;
 }
 
-export interface ReferenceRatesParams {
+export interface ReferenceRatesParams extends JsonApiPaginationParams {
   "filter[code]"?: string;
+  /** Supported currency code. */
   "filter[currency]"?: "USD" | "GBP" | "EUR";
   "filter[from]"?: DateString;
   "filter[to]"?: DateString;
-  "page[offset]"?: number;
-  "page[limit]"?: number;
 }
 
 export interface ReferenceRateItem {
@@ -1267,17 +1282,25 @@ export interface ReferenceRateItem {
   rate: number;
   source: string;
   source_series_id: string;
+  /** Rate distribution percentiles (NY Fed series only). */
+  percentiles?: {
+    p1?: number;
+    p25?: number;
+    p75?: number;
+    p99?: number;
+    [key: string]: unknown;
+  };
+  /** Underlying transaction volume in billions of USD (NY Fed series only). */
+  volume_billion_usd?: number;
   [key: string]: unknown;
 }
 
-export interface PolicyRatesParams {
+export interface PolicyRatesParams extends JsonApiPaginationParams {
   "filter[code]"?: string;
   "filter[country]"?: string;
   "filter[central_bank]"?: string;
   "filter[from]"?: DateString;
   "filter[to]"?: DateString;
-  "page[offset]"?: number;
-  "page[limit]"?: number;
 }
 
 export interface PolicyRateItem {

@@ -2,11 +2,10 @@ import type { HttpClient } from "../http.js";
 import type {
   SanctionsEntitiesParams,
   SanctionsEntityItem,
+  SanctionsListResponse,
   SanctionsProgramItem,
-  SanctionsProgramsParams,
   SanctionsResponse,
   SanctionsSourceItem,
-  SanctionsSourcesParams,
   SanctionsVesselItem,
   SanctionsVesselsParams,
 } from "../types.js";
@@ -17,7 +16,7 @@ import type {
  *
  * Accessed via `client.sanctions`.
  *
- * @see https://eodhd.com/financial-apis/
+ * @see https://eodhd.com/financial-apis/sanctions-api-ofac-screening-data-entities-vessels
  */
 export class SanctionsApi {
   constructor(private http: HttpClient) {}
@@ -42,7 +41,7 @@ export class SanctionsApi {
   /**
    * Fetch sanctioned vessels.
    *
-   * @param params - Optional source, imo, flag, vessel_type, q (search), program filters, and pagination
+   * @param params - Optional source, imo, flag, vessel_type, q (minimum 2 characters), program filters, and pagination
    * @returns Envelope with sanctioned vessel items, meta, and links
    * @throws {@link EODHDError} on API error
    *
@@ -59,8 +58,9 @@ export class SanctionsApi {
   /**
    * Fetch the list of sanctions programs with entity counts.
    *
-   * @param params - Optional pagination
-   * @returns Envelope with sanctions program items, meta, and links
+   * This endpoint is not paginated and takes no parameters.
+   *
+   * @returns Envelope with sanctions program items (meta and links are empty)
    * @throws {@link EODHDError} on API error
    *
    * @example
@@ -69,15 +69,16 @@ export class SanctionsApi {
    * console.log(res.data[0].program, res.data[0].count);
    * ```
    */
-  async programs(params: SanctionsProgramsParams = {}): Promise<SanctionsResponse<SanctionsProgramItem>> {
-    return this.http.get("/sanctions/programs", params);
+  async programs(): Promise<SanctionsListResponse<SanctionsProgramItem>> {
+    return this.http.get("/sanctions/programs");
   }
 
   /**
    * Fetch the list of sanctions sources.
    *
-   * @param params - Optional pagination
-   * @returns Envelope with sanctions source items, meta, and links
+   * This endpoint is not paginated and takes no parameters.
+   *
+   * @returns Envelope with sanctions source items (meta and links are empty)
    * @throws {@link EODHDError} on API error
    *
    * @example
@@ -86,7 +87,7 @@ export class SanctionsApi {
    * console.log(res.data[0].name);
    * ```
    */
-  async sources(params: SanctionsSourcesParams = {}): Promise<SanctionsResponse<SanctionsSourceItem>> {
-    return this.http.get("/sanctions/sources", params);
+  async sources(): Promise<SanctionsListResponse<SanctionsSourceItem>> {
+    return this.http.get("/sanctions/sources");
   }
 }

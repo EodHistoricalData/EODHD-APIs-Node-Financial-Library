@@ -412,6 +412,25 @@ describe("HttpClient", () => {
         expect((err as EODHDError).code).toBe("client_error");
       }
     });
+
+    it("preserves 422 validation details", async () => {
+      const validationBody = { message: "The given data was invalid.", errors: { "page.limit": ["Maximum is 100."] } };
+      mockFetch.mockResolvedValue(
+        errorResponse(422, JSON.stringify(validationBody), { "X-Request-Id": "validation-request" }),
+      );
+
+      const http = createHttpClient();
+      try {
+        await http.get("/credit-risk/sovereign/risk-premium");
+        expect.unreachable("should have thrown");
+      } catch (err) {
+        expect(err).toBeInstanceOf(EODHDError);
+        expect((err as EODHDError).statusCode).toBe(422);
+        expect((err as EODHDError).code).toBe("client_error");
+        expect((err as EODHDError).requestId).toBe("validation-request");
+        expect((err as EODHDError).responseBody).toEqual(validationBody);
+      }
+    });
   });
 
   // ── Fetch error wrapping ─────────────────────────────────────────────────

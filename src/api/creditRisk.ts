@@ -23,7 +23,7 @@ import type {
  *
  * Accessed via `client.creditRisk`.
  *
- * @see https://eodhd.com/financial-apis/
+ * @see https://eodhd.com/financial-apis/credit-and-sovereign-risk-data-api
  */
 export class CreditRiskApi {
   constructor(private http: HttpClient) {}
@@ -124,7 +124,7 @@ export class CreditRiskApi {
   /**
    * Fetch high quality market (HQM) corporate bond yields.
    *
-   * @param params - Optional tenor, type (par|spot), from/to date filters, and pagination
+   * @param params - Optional CSV tenor/type filters, from/to date filters, and pagination
    * @returns Envelope with corporate HQM yield items, meta, and links
    * @throws {@link EODHDError} on API error
    *
@@ -134,16 +134,14 @@ export class CreditRiskApi {
    * console.log(y.data[0].yield_value);
    * ```
    */
-  async corporateHqmYields(
-    params: CorporateHqmYieldsParams = {},
-  ): Promise<CreditRiskResponse<CorporateHqmYieldItem>> {
+  async corporateHqmYields(params: CorporateHqmYieldsParams = {}): Promise<CreditRiskResponse<CorporateHqmYieldItem>> {
     return this.http.get("/credit-risk/corporate/hqm-yields", params);
   }
 
   /**
    * Fetch CDS market aggregates (e.g. gross notional by grade or cleared status).
    *
-   * @param params - Optional metric, dimension, from/to date filters, and pagination
+   * @param params - Optional metric, dimension, value, region, from/to date filters, and pagination
    * @returns Envelope with CDS market aggregate items, meta, and links
    * @throws {@link EODHDError} on API error
    *

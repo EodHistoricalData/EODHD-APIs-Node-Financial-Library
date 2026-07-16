@@ -43,6 +43,7 @@ import type {
   FundamentalsParams,
   FundingStressItem,
   FundingStressParams,
+  FundingStressResponse,
   HistoricalMarketCapPoint,
   IdMappingItem,
   IdMappingParams,
@@ -65,11 +66,10 @@ import type {
   ReferenceRatesParams,
   SanctionsEntitiesParams,
   SanctionsEntityItem,
+  SanctionsListResponse,
   SanctionsProgramItem,
-  SanctionsProgramsParams,
   SanctionsResponse,
   SanctionsSourceItem,
-  SanctionsSourcesParams,
   SanctionsVesselItem,
   SanctionsVesselsParams,
   ScreenerParams,
@@ -214,7 +214,7 @@ export class EODHDClient {
    * console.log(rp.data[0].country_risk_premium);
    * ```
    *
-   * @see https://eodhd.com/financial-apis/
+   * @see https://eodhd.com/financial-apis/credit-and-sovereign-risk-data-api
    */
   readonly creditRisk: CreditRiskApi;
 
@@ -227,7 +227,7 @@ export class EODHDClient {
    * console.log(res.data[0].name);
    * ```
    *
-   * @see https://eodhd.com/financial-apis/
+   * @see https://eodhd.com/financial-apis/sanctions-api-ofac-screening-data-entities-vessels
    */
   readonly sanctions: SanctionsApi;
 
@@ -241,7 +241,7 @@ export class EODHDClient {
    * console.log(res.data[0].code, res.data[0].rate);
    * ```
    *
-   * @see https://eodhd.com/financial-apis/
+   * @see https://eodhd.com/financial-apis/interest-rates-api-sofr-fed-funds-ecb-boe-policy-rates
    */
   readonly interestRates: InterestRatesApi;
 
@@ -837,9 +837,7 @@ export class EODHDClient {
    * console.log(rp.data[0].country_risk_premium);
    * ```
    */
-  sovereignRiskPremium(
-    params?: SovereignRiskPremiumParams,
-  ): Promise<CreditRiskResponse<SovereignRiskPremiumItem>> {
+  sovereignRiskPremium(params?: SovereignRiskPremiumParams): Promise<CreditRiskResponse<SovereignRiskPremiumItem>> {
     return this.creditRisk.sovereignRiskPremium(params);
   }
 
@@ -875,9 +873,7 @@ export class EODHDClient {
    * console.log(s.data[0].cds_spread);
    * ```
    */
-  sovereignCdsSpreads(
-    params?: SovereignCdsSpreadsParams,
-  ): Promise<CreditRiskResponse<SovereignCdsSpreadItem>> {
+  sovereignCdsSpreads(params?: SovereignCdsSpreadsParams): Promise<CreditRiskResponse<SovereignCdsSpreadItem>> {
     return this.creditRisk.sovereignCdsSpreads(params);
   }
 
@@ -920,7 +916,7 @@ export class EODHDClient {
   /**
    * Fetch high quality market (HQM) corporate bond yields.
    *
-   * @param params - Optional tenor, type (par|spot), from/to date filters, and pagination
+   * @param params - Optional CSV tenor/type filters, from/to date filters, and pagination
    * @returns Envelope with corporate HQM yield items, meta, and links
    * @throws {@link EODHDError} on API error
    *
@@ -937,7 +933,7 @@ export class EODHDClient {
   /**
    * Fetch CDS market aggregates (e.g. gross notional by grade or cleared status).
    *
-   * @param params - Optional metric, dimension, from/to date filters, and pagination
+   * @param params - Optional metric, dimension, value, region, from/to date filters, and pagination
    * @returns Envelope with CDS market aggregate items, meta, and links
    * @throws {@link EODHDError} on API error
    *
@@ -947,9 +943,7 @@ export class EODHDClient {
    * console.log(agg.data[0].usd_notional_mn);
    * ```
    */
-  cdsMarketAggregates(
-    params?: CdsMarketAggregatesParams,
-  ): Promise<CreditRiskResponse<CdsMarketAggregateItem>> {
+  cdsMarketAggregates(params?: CdsMarketAggregatesParams): Promise<CreditRiskResponse<CdsMarketAggregateItem>> {
     return this.creditRisk.cdsMarketAggregates(params);
   }
 
@@ -975,7 +969,7 @@ export class EODHDClient {
   /**
    * Fetch sanctioned vessels.
    *
-   * @param params - Optional source, imo, flag, vessel_type, q (search), program filters, and pagination
+   * @param params - Optional source, imo, flag, vessel_type, q (minimum 2 characters), program filters, and pagination
    * @returns Envelope with sanctioned vessel items, meta, and links
    * @throws {@link EODHDError} on API error
    *
@@ -992,8 +986,9 @@ export class EODHDClient {
   /**
    * Fetch the list of sanctions programs with entity counts.
    *
-   * @param params - Optional pagination
-   * @returns Envelope with sanctions program items, meta, and links
+   * This endpoint is not paginated and takes no parameters.
+   *
+   * @returns Envelope with sanctions program items (meta and links are empty)
    * @throws {@link EODHDError} on API error
    *
    * @example
@@ -1002,15 +997,16 @@ export class EODHDClient {
    * console.log(res.data[0].program, res.data[0].count);
    * ```
    */
-  sanctionsPrograms(params?: SanctionsProgramsParams): Promise<SanctionsResponse<SanctionsProgramItem>> {
-    return this.sanctions.programs(params);
+  sanctionsPrograms(): Promise<SanctionsListResponse<SanctionsProgramItem>> {
+    return this.sanctions.programs();
   }
 
   /**
    * Fetch the list of sanctions sources.
    *
-   * @param params - Optional pagination
-   * @returns Envelope with sanctions source items, meta, and links
+   * This endpoint is not paginated and takes no parameters.
+   *
+   * @returns Envelope with sanctions source items (meta and links are empty)
    * @throws {@link EODHDError} on API error
    *
    * @example
@@ -1019,8 +1015,8 @@ export class EODHDClient {
    * console.log(res.data[0].name);
    * ```
    */
-  sanctionsSources(params?: SanctionsSourcesParams): Promise<SanctionsResponse<SanctionsSourceItem>> {
-    return this.sanctions.sources(params);
+  sanctionsSources(): Promise<SanctionsListResponse<SanctionsSourceItem>> {
+    return this.sanctions.sources();
   }
 
   // ── Interest Rates & Spreads ──
@@ -1028,7 +1024,7 @@ export class EODHDClient {
   /**
    * Fetch benchmark reference rates (e.g. SOFR, SONIA, ESTR).
    *
-   * @param params - Optional code, currency (USD|GBP|EUR), from/to date filters, and pagination
+   * @param params - Optional code, supported currency (USD|GBP|EUR), from/to date filters, and pagination
    * @returns Envelope with reference rate items, meta, and links
    * @throws {@link EODHDError} on API error
    *
@@ -1070,11 +1066,11 @@ export class EODHDClient {
    *
    * @example
    * ```ts
-   * const res = await client.fundingStress({ 'filter[code]': 'SOFR_OIS' });
+   * const res = await client.fundingStress({ 'filter[code]': 'EFFR_SOFR' });
    * console.log(res.data[0].value_bps, res.data[0].formula);
    * ```
    */
-  fundingStress(params?: FundingStressParams): Promise<InterestRatesResponse<FundingStressItem>> {
+  fundingStress(params?: FundingStressParams): Promise<FundingStressResponse<FundingStressItem>> {
     return this.interestRates.fundingStress(params);
   }
 

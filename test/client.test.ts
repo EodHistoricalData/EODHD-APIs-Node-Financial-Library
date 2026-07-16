@@ -24,6 +24,14 @@ function getCalledUrl(mockFetch: ReturnType<typeof vi.fn>): string {
   return mockFetch.mock.calls[0][0];
 }
 
+function getCalledParams(mockFetch: ReturnType<typeof vi.fn>): URLSearchParams {
+  return new URL(getCalledUrl(mockFetch)).searchParams;
+}
+
+function getCalledPathname(mockFetch: ReturnType<typeof vi.fn>): string {
+  return new URL(getCalledUrl(mockFetch)).pathname;
+}
+
 function _getCalledMethod(mockFetch: ReturnType<typeof vi.fn>): string {
   return mockFetch.mock.calls[0][1].method;
 }
@@ -98,13 +106,13 @@ describe("EODHDClient", () => {
 
     it("reads EODHD_API_TOKEN from env if no apiToken provided", () => {
       process.env.EODHD_API_TOKEN = "env-token";
-      const client = new EODHDClient({} as any);
+      const client = new EODHDClient({});
       expect(client).toBeDefined();
     });
 
     it("throws if neither apiToken nor env var set", () => {
       delete process.env.EODHD_API_TOKEN;
-      expect(() => new EODHDClient({} as any)).toThrow("apiToken is required");
+      expect(() => new EODHDClient({})).toThrow("apiToken is required");
     });
 
     it("trims apiToken", async () => {
@@ -117,7 +125,7 @@ describe("EODHDClient", () => {
 
     it("trims env var token", async () => {
       process.env.EODHD_API_TOKEN = "  env-trimmed  ";
-      const client = new EODHDClient({} as any);
+      const client = new EODHDClient({});
       await client.user();
 
       const url = getCalledUrl(fetch);
@@ -650,60 +658,57 @@ describe("EODHDClient", () => {
       const client = createClient();
       await client.sovereignRiskPremium({ "filter[country]": "USA" });
 
-      const url = getCalledUrl(fetch);
-      expect(url).toContain("/credit-risk/sovereign/risk-premium");
-      expect(url).toContain(encodeURIComponent("filter[country]"));
+      expect(getCalledPathname(fetch)).toBe("/api/credit-risk/sovereign/risk-premium");
+      expect(getCalledParams(fetch).get("filter[country]")).toBe("USA");
     });
 
     it("sovereignCreditRatings() calls /credit-risk/sovereign/credit-ratings", async () => {
       const client = createClient();
       await client.sovereignCreditRatings({ "filter[country]": "USA" });
 
-      expect(getCalledUrl(fetch)).toContain("/credit-risk/sovereign/credit-ratings");
+      expect(getCalledPathname(fetch)).toBe("/api/credit-risk/sovereign/credit-ratings");
     });
 
     it("sovereignCdsSpreads() calls /credit-risk/sovereign/cds-spreads", async () => {
       const client = createClient();
       await client.sovereignCdsSpreads({ "filter[country]": "USA" });
 
-      expect(getCalledUrl(fetch)).toContain("/credit-risk/sovereign/cds-spreads");
+      expect(getCalledPathname(fetch)).toBe("/api/credit-risk/sovereign/cds-spreads");
     });
 
     it("sovereignDefaultSpreads() calls /credit-risk/sovereign/default-spreads", async () => {
       const client = createClient();
       await client.sovereignDefaultSpreads({ "filter[rating]": "Aaa" });
 
-      expect(getCalledUrl(fetch)).toContain("/credit-risk/sovereign/default-spreads");
+      expect(getCalledPathname(fetch)).toBe("/api/credit-risk/sovereign/default-spreads");
     });
 
     it("corporateCmdi() calls /credit-risk/corporate/cmdi", async () => {
       const client = createClient();
       await client.corporateCmdi({ "filter[from]": "2024-01-01" });
 
-      const url = getCalledUrl(fetch);
-      expect(url).toContain("/credit-risk/corporate/cmdi");
+      expect(getCalledPathname(fetch)).toBe("/api/credit-risk/corporate/cmdi");
     });
 
     it("corporateHqmYields() calls /credit-risk/corporate/hqm-yields", async () => {
       const client = createClient();
       await client.corporateHqmYields({ "filter[type]": "spot" });
 
-      const url = getCalledUrl(fetch);
-      expect(url).toContain("/credit-risk/corporate/hqm-yields");
+      expect(getCalledPathname(fetch)).toBe("/api/credit-risk/corporate/hqm-yields");
     });
 
     it("cdsMarketAggregates() calls /credit-risk/cds-market/aggregates", async () => {
       const client = createClient();
       await client.cdsMarketAggregates({ "filter[metric]": "gross_notional" });
 
-      expect(getCalledUrl(fetch)).toContain("/credit-risk/cds-market/aggregates");
+      expect(getCalledPathname(fetch)).toBe("/api/credit-risk/cds-market/aggregates");
     });
 
     it("creditRisk.sovereignRiskPremium() (direct property) calls the same endpoint", async () => {
       const client = createClient();
       await client.creditRisk.sovereignRiskPremium();
 
-      expect(getCalledUrl(fetch)).toContain("/credit-risk/sovereign/risk-premium");
+      expect(getCalledPathname(fetch)).toBe("/api/credit-risk/sovereign/risk-premium");
     });
   });
 
@@ -715,7 +720,7 @@ describe("EODHDClient", () => {
       await client.sanctionsEntities({ country: "RU", type: "individual", q: "ivan", active: true });
 
       const url = getCalledUrl(fetch);
-      expect(url).toContain("/sanctions/entities");
+      expect(getCalledPathname(fetch)).toBe("/api/sanctions/entities");
       // Bare query params, NOT filter[...]
       expect(url).toContain("country=RU");
       expect(url).toContain("type=individual");
@@ -731,7 +736,7 @@ describe("EODHDClient", () => {
       await client.sanctionsVessels({ flag: "PA", imo: "9074729", vessel_type: "tanker" });
 
       const url = getCalledUrl(fetch);
-      expect(url).toContain("/sanctions/vessels");
+      expect(getCalledPathname(fetch)).toBe("/api/sanctions/vessels");
       // Bare query params, NOT filter[...]
       expect(url).toContain("flag=PA");
       expect(url).toContain("imo=9074729");
@@ -745,21 +750,21 @@ describe("EODHDClient", () => {
       const client = createClient();
       await client.sanctionsPrograms();
 
-      expect(getCalledUrl(fetch)).toContain("/sanctions/programs");
+      expect(getCalledPathname(fetch)).toBe("/api/sanctions/programs");
     });
 
     it("sanctionsSources() calls /sanctions/sources", async () => {
       const client = createClient();
       await client.sanctionsSources();
 
-      expect(getCalledUrl(fetch)).toContain("/sanctions/sources");
+      expect(getCalledPathname(fetch)).toBe("/api/sanctions/sources");
     });
 
     it("sanctions.entities() (direct property) calls the same endpoint", async () => {
       const client = createClient();
       await client.sanctions.entities();
 
-      expect(getCalledUrl(fetch)).toContain("/sanctions/entities");
+      expect(getCalledPathname(fetch)).toBe("/api/sanctions/entities");
     });
   });
 
@@ -770,29 +775,168 @@ describe("EODHDClient", () => {
       const client = createClient();
       await client.referenceRates({ "filter[currency]": "USD" });
 
-      const url = getCalledUrl(fetch);
-      expect(url).toContain("/rates/reference-rates");
+      expect(getCalledPathname(fetch)).toBe("/api/rates/reference-rates");
     });
 
     it("policyRates() calls /rates/policy-rates", async () => {
       const client = createClient();
       await client.policyRates({ "filter[country]": "US" });
 
-      expect(getCalledUrl(fetch)).toContain("/rates/policy-rates");
+      expect(getCalledPathname(fetch)).toBe("/api/rates/policy-rates");
     });
 
     it("fundingStress() calls /spreads/funding-stress", async () => {
       const client = createClient();
-      await client.fundingStress({ "filter[code]": "SOFR_OIS" });
+      await client.fundingStress({ "filter[code]": "EFFR_SOFR" });
 
-      expect(getCalledUrl(fetch)).toContain("/spreads/funding-stress");
+      expect(getCalledPathname(fetch)).toBe("/api/spreads/funding-stress");
     });
 
     it("interestRates.referenceRates() (direct property) calls the same endpoint", async () => {
       const client = createClient();
       await client.interestRates.referenceRates();
 
-      expect(getCalledUrl(fetch)).toContain("/rates/reference-rates");
+      expect(getCalledPathname(fetch)).toBe("/api/rates/reference-rates");
+    });
+  });
+
+  // ── Wire-level query params: Credit & Sovereign Risk ────────────────────
+
+  describe("Credit & Sovereign Risk query params", () => {
+    it("sovereignRiskPremium() serializes each filter[...] value on the wire", async () => {
+      const client = createClient();
+      await client.creditRisk.sovereignRiskPremium({
+        "filter[country]": "USA",
+        "filter[region]": "North America",
+        "filter[as_of]": "2026-01-01",
+      });
+
+      const p = getCalledParams(fetch);
+      expect(p.get("filter[country]")).toBe("USA");
+      expect(p.get("filter[region]")).toBe("North America");
+      expect(p.get("filter[as_of]")).toBe("2026-01-01");
+    });
+
+    it("corporateHqmYields() supports comma-separated type and tenor values", async () => {
+      const client = createClient();
+      await client.creditRisk.corporateHqmYields({ "filter[type]": "spot,par", "filter[tenor]": "5,10,30" });
+
+      const p = getCalledParams(fetch);
+      expect(p.get("filter[type]")).toBe("spot,par");
+      expect(p.get("filter[tenor]")).toBe("5,10,30");
+    });
+
+    it("cdsMarketAggregates() serializes metric, dimension, value and region filters", async () => {
+      const client = createClient();
+      await client.creditRisk.cdsMarketAggregates({
+        "filter[metric]": "gross_notional",
+        "filter[dimension]": "cleared_status",
+        "filter[value]": "Cleared",
+        "filter[region]": "North America",
+      });
+
+      const p = getCalledParams(fetch);
+      expect(p.get("filter[metric]")).toBe("gross_notional");
+      expect(p.get("filter[dimension]")).toBe("cleared_status");
+      expect(p.get("filter[value]")).toBe("Cleared");
+      expect(p.get("filter[region]")).toBe("North America");
+    });
+
+    it("serializes pagination page[offset]=0 and page[limit]=100 (0 boundary is kept)", async () => {
+      const client = createClient();
+      await client.creditRisk.sovereignCreditRatings({ "page[offset]": 0, "page[limit]": 100 });
+
+      const p = getCalledParams(fetch);
+      expect(p.get("page[offset]")).toBe("0");
+      expect(p.get("page[limit]")).toBe("100");
+    });
+  });
+
+  // ── Wire-level query params: Interest Rates & Spreads ───────────────────
+
+  describe("Interest Rates query params", () => {
+    it("referenceRates() serializes filter[currency] and filter[code]", async () => {
+      const client = createClient();
+      await client.interestRates.referenceRates({ "filter[currency]": "USD", "filter[code]": "SOFR" });
+
+      const p = getCalledParams(fetch);
+      expect(p.get("filter[currency]")).toBe("USD");
+      expect(p.get("filter[code]")).toBe("SOFR");
+    });
+
+    it("policyRates() serializes country and central_bank filters", async () => {
+      const client = createClient();
+      await client.interestRates.policyRates({ "filter[country]": "US", "filter[central_bank]": "FED" });
+
+      const p = getCalledParams(fetch);
+      expect(p.get("filter[country]")).toBe("US");
+      expect(p.get("filter[central_bank]")).toBe("FED");
+    });
+
+    it("fundingStress() serializes filter[code] and emits no pagination", async () => {
+      const client = createClient();
+      await client.interestRates.fundingStress({ "filter[code]": "EFFR_SOFR" });
+
+      const p = getCalledParams(fetch);
+      expect(p.get("filter[code]")).toBe("EFFR_SOFR");
+      expect(p.get("page[offset]")).toBeNull();
+      expect(p.get("page[limit]")).toBeNull();
+    });
+  });
+
+  // ── Wire-level query params: Sanctions ──────────────────────────────────
+
+  describe("Sanctions query params", () => {
+    it("entities() serializes active:true as the string 'true'", async () => {
+      const client = createClient();
+      await client.sanctions.entities({ active: true });
+
+      expect(getCalledParams(fetch).get("active")).toBe("true");
+    });
+
+    it("entities() serializes active:false as the string 'false' (not dropped)", async () => {
+      const client = createClient();
+      await client.sanctions.entities({ active: false });
+
+      expect(getCalledParams(fetch).get("active")).toBe("false");
+    });
+
+    it("entities() accepts the string form active:'false'", async () => {
+      const client = createClient();
+      await client.sanctions.entities({ active: "false" });
+
+      expect(getCalledParams(fetch).get("active")).toBe("false");
+    });
+
+    it("entities() combines bare filters with page[...] pagination (no filter[...] wrapping)", async () => {
+      const client = createClient();
+      await client.sanctions.entities({ country: "RU", "page[offset]": 20, "page[limit]": 50 });
+
+      const p = getCalledParams(fetch);
+      expect(p.get("country")).toBe("RU");
+      expect(p.get("page[offset]")).toBe("20");
+      expect(p.get("page[limit]")).toBe("50");
+      expect(p.get("filter[country]")).toBeNull();
+    });
+
+    it("programs() takes no params and emits no pagination", async () => {
+      const client = createClient();
+      await client.sanctions.programs();
+
+      const p = getCalledParams(fetch);
+      expect(getCalledUrl(fetch)).toContain("/sanctions/programs");
+      expect(p.get("page[offset]")).toBeNull();
+      expect(p.get("page[limit]")).toBeNull();
+    });
+
+    it("sources() takes no params and emits no pagination", async () => {
+      const client = createClient();
+      await client.sanctions.sources();
+
+      const p = getCalledParams(fetch);
+      expect(getCalledUrl(fetch)).toContain("/sanctions/sources");
+      expect(p.get("page[offset]")).toBeNull();
+      expect(p.get("page[limit]")).toBeNull();
     });
   });
 });
