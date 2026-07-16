@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **Credit & Sovereign Risk API** (`client.creditRisk.*`) — 7 endpoints: sovereign risk premiums, credit ratings, CDS spreads, default spreads, corporate CMDI, HQM yields, and CDS market aggregates
+- **Sanctions API** (`client.sanctions.*`) — 4 endpoints: OFAC-sourced sanctioned entities and vessels, plus programs and sources listings
+- **Interest Rates & Spreads API** (`client.interestRates.*`) — 3 endpoints: reference rates (SOFR/SONIA/ESTR), central bank policy rates, and funding-stress spreads
+- Top-level convenience aliases on `EODHDClient` for all 14 new methods
+
+### Changed
+
+- **Sanctions API** — entity and vessel IDs are optional to match production responses
+
 ## 1.0.0 (2026-03-04)
 
 First stable release. No API changes from 0.2.0.

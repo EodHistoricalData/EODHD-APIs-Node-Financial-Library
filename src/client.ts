@@ -2,12 +2,15 @@ import { CalendarApi } from "./api/calendar.js";
 import { CboeApi } from "./api/cboe.js";
 import { CommoditiesApi } from "./api/commodities.js";
 import { CorporateApi } from "./api/corporate.js";
+import { CreditRiskApi } from "./api/creditRisk.js";
 // API modules
 import { EodApi } from "./api/eod.js";
 import { ExchangesApi } from "./api/exchanges.js";
 import { FundamentalsApi } from "./api/fundamentals.js";
+import { InterestRatesApi } from "./api/interestRates.js";
 import { MacroApi } from "./api/macro.js";
 import { NewsApi } from "./api/news.js";
+import { SanctionsApi } from "./api/sanctions.js";
 import { ScreeningApi } from "./api/screening.js";
 import { TreasuryApi } from "./api/treasury.js";
 import { UserApi } from "./api/user.js";
@@ -23,6 +26,13 @@ import type {
   BulkEodParams,
   BulkFundamentalsItem,
   BulkFundamentalsParams,
+  CdsMarketAggregateItem,
+  CdsMarketAggregatesParams,
+  CorporateCmdiItem,
+  CorporateCmdiParams,
+  CorporateHqmYieldItem,
+  CorporateHqmYieldsParams,
+  CreditRiskResponse,
   DateRange,
   DividendDataPoint,
   EconomicEventsParams,
@@ -31,11 +41,15 @@ import type {
   EodParams,
   FundamentalsData,
   FundamentalsParams,
+  FundingStressItem,
+  FundingStressParams,
+  FundingStressResponse,
   HistoricalMarketCapPoint,
   IdMappingItem,
   IdMappingParams,
   InsiderTransactionItem,
   InsiderTransactionsParams,
+  InterestRatesResponse,
   IntradayDataPoint,
   IntradayParams,
   MacroIndicatorItem,
@@ -44,14 +58,34 @@ import type {
   NewsParams,
   NewsWordWeight,
   NewsWordWeightsParams,
+  PolicyRateItem,
+  PolicyRatesParams,
   RealTimeParams,
   RealTimeQuote,
+  ReferenceRateItem,
+  ReferenceRatesParams,
+  SanctionsEntitiesParams,
+  SanctionsEntityItem,
+  SanctionsListResponse,
+  SanctionsProgramItem,
+  SanctionsResponse,
+  SanctionsSourceItem,
+  SanctionsVesselItem,
+  SanctionsVesselsParams,
   ScreenerParams,
   ScreenerResponse,
   SearchParams,
   SearchResult,
   SentimentItem,
   SentimentsParams,
+  SovereignCdsSpreadItem,
+  SovereignCdsSpreadsParams,
+  SovereignCreditRatingItem,
+  SovereignCreditRatingsParams,
+  SovereignDefaultSpreadItem,
+  SovereignDefaultSpreadsParams,
+  SovereignRiskPremiumItem,
+  SovereignRiskPremiumParams,
   SplitDataPoint,
   TechnicalDataPoint,
   TechnicalParams,
@@ -171,6 +205,47 @@ export class EODHDClient {
   readonly commodities: CommoditiesApi;
 
   /**
+   * Credit & Sovereign Risk: sovereign risk premiums, credit ratings, CDS spreads,
+   * default spreads, corporate CMDI, HQM yields, and CDS market aggregates.
+   *
+   * @example
+   * ```ts
+   * const rp = await client.creditRisk.sovereignRiskPremium({ 'filter[country]': 'USA' });
+   * console.log(rp.data[0].country_risk_premium);
+   * ```
+   *
+   * @see https://eodhd.com/financial-apis/credit-and-sovereign-risk-data-api
+   */
+  readonly creditRisk: CreditRiskApi;
+
+  /**
+   * Sanctions: sanctioned entities and vessels, plus programs and sources listings.
+   *
+   * @example
+   * ```ts
+   * const res = await client.sanctions.entities({ country: 'RU', type: 'individual' });
+   * console.log(res.data[0].name);
+   * ```
+   *
+   * @see https://eodhd.com/financial-apis/sanctions-api-ofac-screening-data-entities-vessels
+   */
+  readonly sanctions: SanctionsApi;
+
+  /**
+   * Interest Rates & Spreads: benchmark reference rates, central bank policy rates,
+   * and funding-stress spreads.
+   *
+   * @example
+   * ```ts
+   * const res = await client.interestRates.referenceRates({ 'filter[currency]': 'USD' });
+   * console.log(res.data[0].code, res.data[0].rate);
+   * ```
+   *
+   * @see https://eodhd.com/financial-apis/interest-rates-api-sofr-fed-funds-ecb-boe-policy-rates
+   */
+  readonly interestRates: InterestRatesApi;
+
+  /**
    * Marketplace data providers (Unicorn Bay, Praams, InvestVerte).
    *
    * @example
@@ -233,6 +308,9 @@ export class EODHDClient {
     this.treasury = new TreasuryApi(this.http);
     this.cboe = new CboeApi(this.http);
     this.commodities = new CommoditiesApi(this.http);
+    this.creditRisk = new CreditRiskApi(this.http);
+    this.sanctions = new SanctionsApi(this.http);
+    this.interestRates = new InterestRatesApi(this.http);
     this._screening = new ScreeningApi(this.http);
     this._corporate = new CorporateApi(this.http);
     this._user = new UserApi(this.http);
@@ -742,6 +820,258 @@ export class EODHDClient {
    */
   logoSvg(symbol: Ticker): Promise<ArrayBuffer> {
     return this._fundamentals.logoSvg(symbol);
+  }
+
+  // ── Credit & Sovereign Risk ──
+
+  /**
+   * Fetch sovereign equity/country risk premiums by country.
+   *
+   * @param params - Optional country, region, as-of date filters, and pagination
+   * @returns Envelope with sovereign risk premium items, meta, and links
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const rp = await client.sovereignRiskPremium({ 'filter[country]': 'USA' });
+   * console.log(rp.data[0].country_risk_premium);
+   * ```
+   */
+  sovereignRiskPremium(params?: SovereignRiskPremiumParams): Promise<CreditRiskResponse<SovereignRiskPremiumItem>> {
+    return this.creditRisk.sovereignRiskPremium(params);
+  }
+
+  /**
+   * Fetch sovereign credit ratings (Moody's, S&P, Fitch) by country.
+   *
+   * @param params - Optional country, as-of date filters, and pagination
+   * @returns Envelope with sovereign credit rating items, meta, and links
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const r = await client.sovereignCreditRatings({ 'filter[country]': 'USA' });
+   * console.log(r.data[0].sp_rating, r.data[0].fitch_rating);
+   * ```
+   */
+  sovereignCreditRatings(
+    params?: SovereignCreditRatingsParams,
+  ): Promise<CreditRiskResponse<SovereignCreditRatingItem>> {
+    return this.creditRisk.sovereignCreditRatings(params);
+  }
+
+  /**
+   * Fetch sovereign CDS spreads by country.
+   *
+   * @param params - Optional country, as-of date filters, and pagination
+   * @returns Envelope with sovereign CDS spread items, meta, and links
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const s = await client.sovereignCdsSpreads({ 'filter[country]': 'USA' });
+   * console.log(s.data[0].cds_spread);
+   * ```
+   */
+  sovereignCdsSpreads(params?: SovereignCdsSpreadsParams): Promise<CreditRiskResponse<SovereignCdsSpreadItem>> {
+    return this.creditRisk.sovereignCdsSpreads(params);
+  }
+
+  /**
+   * Fetch sovereign default spreads by rating.
+   *
+   * @param params - Optional rating, as-of date filters, and pagination
+   * @returns Envelope with sovereign default spread items, meta, and links
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const d = await client.sovereignDefaultSpreads({ 'filter[rating]': 'Aaa' });
+   * console.log(d.data[0].default_spread);
+   * ```
+   */
+  sovereignDefaultSpreads(
+    params?: SovereignDefaultSpreadsParams,
+  ): Promise<CreditRiskResponse<SovereignDefaultSpreadItem>> {
+    return this.creditRisk.sovereignDefaultSpreads(params);
+  }
+
+  /**
+   * Fetch corporate credit market distress index (CMDI) time series.
+   *
+   * @param params - Optional from/to date filters and pagination
+   * @returns Envelope with corporate CMDI items, meta, and links
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const cmdi = await client.corporateCmdi({ 'filter[from]': '2024-01-01' });
+   * console.log(cmdi.data[0].market_cmdi);
+   * ```
+   */
+  corporateCmdi(params?: CorporateCmdiParams): Promise<CreditRiskResponse<CorporateCmdiItem>> {
+    return this.creditRisk.corporateCmdi(params);
+  }
+
+  /**
+   * Fetch high quality market (HQM) corporate bond yields.
+   *
+   * @param params - Optional CSV tenor/type filters, from/to date filters, and pagination
+   * @returns Envelope with corporate HQM yield items, meta, and links
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const y = await client.corporateHqmYields({ 'filter[type]': 'spot' });
+   * console.log(y.data[0].yield_value);
+   * ```
+   */
+  corporateHqmYields(params?: CorporateHqmYieldsParams): Promise<CreditRiskResponse<CorporateHqmYieldItem>> {
+    return this.creditRisk.corporateHqmYields(params);
+  }
+
+  /**
+   * Fetch CDS market aggregates (e.g. gross notional by grade or cleared status).
+   *
+   * @param params - Optional metric, dimension, value, region, from/to date filters, and pagination
+   * @returns Envelope with CDS market aggregate items, meta, and links
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const agg = await client.cdsMarketAggregates({ 'filter[metric]': 'gross_notional' });
+   * console.log(agg.data[0].usd_notional_mn);
+   * ```
+   */
+  cdsMarketAggregates(params?: CdsMarketAggregatesParams): Promise<CreditRiskResponse<CdsMarketAggregateItem>> {
+    return this.creditRisk.cdsMarketAggregates(params);
+  }
+
+  // ── Sanctions ──
+
+  /**
+   * Fetch sanctioned entities.
+   *
+   * @param params - Optional source, type, program, country, q (search), active filters, and pagination
+   * @returns Envelope with sanctioned entity items, meta, and links
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const res = await client.sanctionsEntities({ country: 'RU', type: 'individual' });
+   * console.log(res.data[0].name);
+   * ```
+   */
+  sanctionsEntities(params?: SanctionsEntitiesParams): Promise<SanctionsResponse<SanctionsEntityItem>> {
+    return this.sanctions.entities(params);
+  }
+
+  /**
+   * Fetch sanctioned vessels.
+   *
+   * @param params - Optional source, imo, flag, vessel_type, q (minimum 2 characters), program filters, and pagination
+   * @returns Envelope with sanctioned vessel items, meta, and links
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const res = await client.sanctionsVessels({ flag: 'PA' });
+   * console.log(res.data[0].imo_number);
+   * ```
+   */
+  sanctionsVessels(params?: SanctionsVesselsParams): Promise<SanctionsResponse<SanctionsVesselItem>> {
+    return this.sanctions.vessels(params);
+  }
+
+  /**
+   * Fetch the list of sanctions programs with entity counts.
+   *
+   * This endpoint is not paginated and takes no parameters.
+   *
+   * @returns Envelope with sanctions program items (meta and links are empty)
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const res = await client.sanctionsPrograms();
+   * console.log(res.data[0].program, res.data[0].count);
+   * ```
+   */
+  sanctionsPrograms(): Promise<SanctionsListResponse<SanctionsProgramItem>> {
+    return this.sanctions.programs();
+  }
+
+  /**
+   * Fetch the list of sanctions sources.
+   *
+   * This endpoint is not paginated and takes no parameters.
+   *
+   * @returns Envelope with sanctions source items (meta and links are empty)
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const res = await client.sanctionsSources();
+   * console.log(res.data[0].name);
+   * ```
+   */
+  sanctionsSources(): Promise<SanctionsListResponse<SanctionsSourceItem>> {
+    return this.sanctions.sources();
+  }
+
+  // ── Interest Rates & Spreads ──
+
+  /**
+   * Fetch benchmark reference rates (e.g. SOFR, SONIA, ESTR).
+   *
+   * @param params - Optional code, supported currency (USD|GBP|EUR), from/to date filters, and pagination
+   * @returns Envelope with reference rate items, meta, and links
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const res = await client.referenceRates({ 'filter[currency]': 'USD' });
+   * console.log(res.data[0].code, res.data[0].rate);
+   * ```
+   */
+  referenceRates(params?: ReferenceRatesParams): Promise<InterestRatesResponse<ReferenceRateItem>> {
+    return this.interestRates.referenceRates(params);
+  }
+
+  /**
+   * Fetch central bank policy rates.
+   *
+   * @param params - Optional code, country, central_bank, from/to date filters, and pagination
+   * @returns Envelope with policy rate items, meta, and links
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const res = await client.policyRates({ 'filter[country]': 'US' });
+   * console.log(res.data[0].central_bank, res.data[0].rate);
+   * ```
+   */
+  policyRates(params?: PolicyRatesParams): Promise<InterestRatesResponse<PolicyRateItem>> {
+    return this.interestRates.policyRates(params);
+  }
+
+  /**
+   * Fetch funding-stress spreads (e.g. spread between two funding legs, in bps).
+   *
+   * Note: this endpoint does not support pagination.
+   *
+   * @param params - Optional code and from/to date filters
+   * @returns Envelope with funding-stress items, meta, and links
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const res = await client.fundingStress({ 'filter[code]': 'EFFR_SOFR' });
+   * console.log(res.data[0].value_bps, res.data[0].formula);
+   * ```
+   */
+  fundingStress(params?: FundingStressParams): Promise<FundingStressResponse<FundingStressItem>> {
+    return this.interestRates.fundingStress(params);
   }
 
   // ── WebSocket ──

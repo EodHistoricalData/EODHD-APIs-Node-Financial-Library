@@ -106,9 +106,9 @@ describe("logging integration", () => {
 
     expect(logger.debug).toHaveBeenCalled();
     // Verify api_token is redacted
-    const calls = (logger.debug as ReturnType<typeof vi.fn>).mock.calls.map((c: unknown[]) => c[0]);
-    expect(calls.some((msg: string) => msg.includes("secret-token"))).toBe(false);
-    expect(calls.some((msg: string) => msg.includes("api_token=***"))).toBe(true);
+    const calls = (logger.debug as ReturnType<typeof vi.fn>).mock.calls.map(([message]) => String(message));
+    expect(calls.some((message) => message.includes("secret-token"))).toBe(false);
+    expect(calls.some((message) => message.includes("api_token=***"))).toBe(true);
   });
 
   it("logs request and response with elapsed time", async () => {
@@ -116,7 +116,7 @@ describe("logging integration", () => {
     const client = new EODHDClient({ apiToken: "test", logger });
     await client.eod("AAPL.US");
 
-    const calls = (logger.debug as ReturnType<typeof vi.fn>).mock.calls.map((c: unknown[]) => c[0]);
+    const calls = (logger.debug as ReturnType<typeof vi.fn>).mock.calls.map(([message]) => String(message));
     // First call: request log with GET
     expect(calls[0]).toMatch(/GET/);
     // Second call: response log with status and elapsed ms
