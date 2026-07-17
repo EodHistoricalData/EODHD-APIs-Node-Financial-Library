@@ -1332,6 +1332,153 @@ export interface FundingStressItem {
   [key: string]: unknown;
 }
 
+// ── Real Estate (BIS Property Prices) ──
+
+/**
+ * `meta` block returned by the paginated Real Estate endpoints. Pagination fields
+ * (`offset`, `limit`) live at the meta root here, not nested under `page`.
+ */
+export interface RealEstateMeta {
+  total: number;
+  offset: number;
+  limit: number;
+  [key: string]: unknown;
+}
+
+/** Envelope shared by the paginated Real Estate endpoints (countries, SPP, DPP). */
+export interface RealEstateResponse<TData, TMeta extends RealEstateMeta = RealEstateMeta> {
+  data: TData[];
+  meta: TMeta;
+  links: JsonApiLinks;
+  [key: string]: unknown;
+}
+
+export interface RealEstateCountriesParams extends JsonApiPaginationParams {
+  sort?: "code" | "-code" | "name" | "-name";
+}
+
+export interface RealEstateCountry {
+  code: string;
+  name: string;
+  has_spp: boolean;
+  has_dpp: boolean;
+  [key: string]: unknown;
+}
+
+/** Response returned by the covered-countries catalogue endpoint. */
+export type RealEstateCountriesResponse = RealEstateResponse<RealEstateCountry>;
+
+export interface RealEstateSelectedPricesParams extends JsonApiPaginationParams {
+  "filter[type]"?: "nominal" | "real";
+  "filter[metric]"?: "index" | "yoy";
+  /** Start period, format `YYYY-Qn` (e.g. `2020-Q1`). */
+  "filter[from]"?: string;
+  /** End period, format `YYYY-Qn` (e.g. `2024-Q4`). */
+  "filter[to]"?: string;
+  sort?: "period" | "-period" | "value" | "-value";
+}
+
+export interface RealEstateSelectedPrice {
+  period: string;
+  value: number;
+  /** `nominal` or `real`. */
+  type: string;
+  /** `index` or `yoy`. */
+  metric: string;
+  [key: string]: unknown;
+}
+
+export interface RealEstateSelectedPricesMeta extends RealEstateMeta {
+  country_code: string;
+  country_name: string;
+  type: string;
+  metric: string;
+  base_year: number | null;
+  frequency: string;
+  source: string;
+  from: string | null;
+  to: string | null;
+}
+
+/** Response returned by the Selected Property Prices (SPP) endpoint. */
+export type RealEstateSelectedPricesResponse = RealEstateResponse<
+  RealEstateSelectedPrice,
+  RealEstateSelectedPricesMeta
+>;
+
+export interface RealEstateDetailedPricesParams extends JsonApiPaginationParams {
+  /** BIS covered-area dimension code. */
+  "filter[area]"?: string;
+  "filter[property_type]"?: string;
+  "filter[vintage]"?: string;
+  "filter[freq]"?: "Q" | "A" | "M" | "H";
+  /** Start period; format follows the series frequency (e.g. `2020-01` or `2020-Q1`). */
+  "filter[from]"?: string;
+  /** End period; format follows the series frequency. */
+  "filter[to]"?: string;
+  sort?: "period" | "-period" | "value" | "-value";
+}
+
+export interface RealEstateDetailedPrice {
+  period: string;
+  value: number;
+  frequency: string;
+  covered_area: string;
+  covered_area_label: string;
+  property_type: string;
+  property_type_label: string;
+  vintage: string;
+  vintage_label: string;
+  unit_measure: string;
+  unit_measure_label: string | null;
+  [key: string]: unknown;
+}
+
+export interface RealEstateDetailedPricesMeta extends RealEstateMeta {
+  country_code: string;
+  source: string;
+  dataset: string;
+  filters: Record<string, unknown>;
+}
+
+/** Response returned by the Detailed Property Prices (DPP) endpoint. */
+export type RealEstateDetailedPricesResponse = RealEstateResponse<
+  RealEstateDetailedPrice,
+  RealEstateDetailedPricesMeta
+>;
+
+export interface RealEstateDetailedSeriesItem {
+  covered_area: string;
+  covered_area_label: string;
+  property_type: string;
+  property_type_label: string;
+  vintage: string;
+  vintage_label: string;
+  compiling_org: string;
+  priced_unit: string;
+  seasonal_adj: string;
+  unit_measure: string;
+  unit_measure_label: string | null;
+  title: string;
+  [key: string]: unknown;
+}
+
+export interface RealEstateDetailedSeriesMeta {
+  country_code: string;
+  total: number;
+  [key: string]: unknown;
+}
+
+/**
+ * Response returned by the DPP series catalogue endpoint. This endpoint is not
+ * paginated and returns no `links` block.
+ */
+export interface RealEstateDetailedSeriesResponse {
+  data: RealEstateDetailedSeriesItem[];
+  meta: RealEstateDetailedSeriesMeta;
+  [key: string]: unknown;
+}
+
 // ── WebSocket ──
 
 export type WebSocketFeed = "us" | "us-quote" | "forex" | "crypto";
