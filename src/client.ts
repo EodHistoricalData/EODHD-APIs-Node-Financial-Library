@@ -10,6 +10,7 @@ import { FundamentalsApi } from "./api/fundamentals.js";
 import { InterestRatesApi } from "./api/interestRates.js";
 import { MacroApi } from "./api/macro.js";
 import { NewsApi } from "./api/news.js";
+import { RealEstateApi } from "./api/realEstate.js";
 import { SanctionsApi } from "./api/sanctions.js";
 import { ScreeningApi } from "./api/screening.js";
 import { TreasuryApi } from "./api/treasury.js";
@@ -60,6 +61,13 @@ import type {
   NewsWordWeightsParams,
   PolicyRateItem,
   PolicyRatesParams,
+  RealEstateCountriesParams,
+  RealEstateCountriesResponse,
+  RealEstateDetailedPricesParams,
+  RealEstateDetailedPricesResponse,
+  RealEstateDetailedSeriesResponse,
+  RealEstateSelectedPricesParams,
+  RealEstateSelectedPricesResponse,
   RealTimeParams,
   RealTimeQuote,
   ReferenceRateItem,
@@ -246,6 +254,21 @@ export class EODHDClient {
   readonly interestRates: InterestRatesApi;
 
   /**
+   * Real Estate: BIS residential property prices — covered countries catalogue,
+   * headline Selected Property Prices (SPP), granular Detailed Property Prices (DPP),
+   * and the DPP series catalogue.
+   *
+   * @example
+   * ```ts
+   * const res = await client.realEstate.selectedPrices('US', { 'filter[type]': 'real' });
+   * console.log(res.data[0].period, res.data[0].value);
+   * ```
+   *
+   * @see https://eodhd.com/financial-apis/real-estate-data-api
+   */
+  readonly realEstate: RealEstateApi;
+
+  /**
    * Marketplace data providers (Unicorn Bay, Praams, InvestVerte).
    *
    * @example
@@ -311,6 +334,7 @@ export class EODHDClient {
     this.creditRisk = new CreditRiskApi(this.http);
     this.sanctions = new SanctionsApi(this.http);
     this.interestRates = new InterestRatesApi(this.http);
+    this.realEstate = new RealEstateApi(this.http);
     this._screening = new ScreeningApi(this.http);
     this._corporate = new CorporateApi(this.http);
     this._user = new UserApi(this.http);
@@ -1072,6 +1096,86 @@ export class EODHDClient {
    */
   fundingStress(params?: FundingStressParams): Promise<FundingStressResponse<FundingStressItem>> {
     return this.interestRates.fundingStress(params);
+  }
+
+  // ── Real Estate (BIS Property Prices) ──
+
+  /**
+   * Fetch the catalogue of covered countries and which datasets each carries.
+   *
+   * @param params - Optional sort and pagination
+   * @returns Envelope with country items, meta, and links
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const res = await client.realEstateCountries({ sort: 'name' });
+   * console.log(res.data[0].code, res.data[0].has_spp, res.data[0].has_dpp);
+   * ```
+   */
+  realEstateCountries(params?: RealEstateCountriesParams): Promise<RealEstateCountriesResponse> {
+    return this.realEstate.countries(params);
+  }
+
+  /**
+   * Fetch the headline harmonised Selected Property Prices (SPP) for a country.
+   *
+   * @param code - ISO alpha-2 country code (case-insensitive), e.g. `US`
+   * @param params - Optional type, metric, from/to period filters, sort, and pagination
+   * @returns Envelope with SPP items, meta, and links
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const res = await client.realEstateSelectedPrices('US', { 'filter[metric]': 'yoy' });
+   * console.log(res.data[0].period, res.data[0].value);
+   * ```
+   */
+  realEstateSelectedPrices(
+    code: string,
+    params?: RealEstateSelectedPricesParams,
+  ): Promise<RealEstateSelectedPricesResponse> {
+    return this.realEstate.selectedPrices(code, params);
+  }
+
+  /**
+   * Fetch the granular national Detailed Property Prices (DPP) for a country.
+   *
+   * @param code - ISO alpha-2 country code (case-insensitive), e.g. `AE`
+   * @param params - Optional area, property_type, vintage, freq, from/to filters, sort, and pagination
+   * @returns Envelope with DPP items, meta, and links
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const res = await client.realEstateDetailedPrices('AE', { 'filter[property_type]': '1' });
+   * console.log(res.data[0].period, res.data[0].value);
+   * ```
+   */
+  realEstateDetailedPrices(
+    code: string,
+    params?: RealEstateDetailedPricesParams,
+  ): Promise<RealEstateDetailedPricesResponse> {
+    return this.realEstate.detailedPrices(code, params);
+  }
+
+  /**
+   * Fetch the catalogue of available DPP series for a country.
+   *
+   * This endpoint is not paginated and takes no query parameters.
+   *
+   * @param code - ISO alpha-2 country code (case-insensitive), e.g. `US`
+   * @returns Envelope with series catalogue items and meta (no links block)
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const res = await client.realEstateDetailedSeries('US');
+   * console.log(res.data[0].title);
+   * ```
+   */
+  realEstateDetailedSeries(code: string): Promise<RealEstateDetailedSeriesResponse> {
+    return this.realEstate.detailedSeries(code);
   }
 
   // ── WebSocket ──
