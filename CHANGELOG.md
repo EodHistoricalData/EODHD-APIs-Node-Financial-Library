@@ -12,6 +12,7 @@
 ### Changed
 
 - **Sanctions API** — entity and vessel IDs are optional to match production responses
+- **US Treasury Rates API** (`client.treasury.*`) — aligned to the real API: removed the unsupported `from`/`to` date-range params (silently ignored by the API) in favour of the only real filter, `filter[year]` (defaults to current year). The methods now return the `{ meta, data, links }` envelope (`links.next` is always `null` — the UST endpoints have no pagination) with typed per-endpoint item shapes instead of a bare array.
 
 ## 1.0.0 (2026-03-04)
 

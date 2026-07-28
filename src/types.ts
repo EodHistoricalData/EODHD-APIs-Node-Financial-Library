@@ -626,13 +626,67 @@ export interface SymbolChangeItem {
   [key: string]: unknown;
 }
 
-// ── Treasury ──
+// ── Treasury (US Treasury Rates) ──
 
-export interface TreasuryParams extends DateRange {}
+/**
+ * Query parameters for the US Treasury rate endpoints.
+ *
+ * The UST API does NOT support pagination (`page[limit]`/`page[offset]`) or
+ * date-range filtering (`from`/`to`) — those are silently ignored and the full
+ * dataset for the requested year is always returned. The only real filter is
+ * the calendar year.
+ */
+export interface TreasuryParams {
+  /** Calendar year to fetch (integer). Defaults to the current year if omitted. */
+  "filter[year]"?: number;
+}
 
-export interface TreasuryRateItem {
-  date: string;
-  [key: string]: unknown;
+/** Yield-curve rate item returned by `yieldRates`. */
+export interface TreasuryYieldRateItem {
+  date: DateString;
+  /** Maturity tenor, e.g. `1M`, `3M`, `10Y`, `30Y`. */
+  tenor: string;
+  rate: number;
+}
+
+/** Inflation-adjusted (real) yield rate item returned by `realYieldRates`. */
+export interface TreasuryRealYieldRateItem {
+  date: DateString;
+  /** Maturity tenor, e.g. `5Y`. */
+  tenor: string;
+  rate: number;
+}
+
+/** Treasury bill rate item returned by `billRates`. */
+export interface TreasuryBillRateItem {
+  date: DateString;
+  /** Maturity tenor, e.g. `4WK`, `13WK`. */
+  tenor: string;
+  discount: number;
+  coupon: number;
+  avg_discount: number;
+  avg_coupon: number;
+  maturity_date: DateString;
+  cusip: string;
+}
+
+/** Long-term average rate item returned by `longTermRates`. */
+export interface TreasuryLongTermRateItem {
+  date: DateString;
+  /** Rate series identifier, e.g. `BC_20year`. */
+  rate_type: string;
+  rate: number;
+  extrapolation_factor: number | null;
+}
+
+/**
+ * Envelope returned by every UST endpoint. The UST API has no pagination, so
+ * `links.next` is always `null` and `meta` carries only the total record count.
+ */
+export interface TreasuryResponse<T> {
+  meta: { total: number };
+  data: T[];
+  links: { next: null };
 }
 
 // ── CBOE ──
