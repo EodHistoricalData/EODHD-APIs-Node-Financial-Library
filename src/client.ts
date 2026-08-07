@@ -13,6 +13,7 @@ import { NewsApi } from "./api/news.js";
 import { RealEstateApi } from "./api/realEstate.js";
 import { SanctionsApi } from "./api/sanctions.js";
 import { ScreeningApi } from "./api/screening.js";
+import { SecFilingsApi } from "./api/secFilings.js";
 import { TreasuryApi } from "./api/treasury.js";
 import { UserApi } from "./api/user.js";
 import { HttpClient } from "./http.js";
@@ -84,6 +85,13 @@ import type {
   ScreenerResponse,
   SearchParams,
   SearchResult,
+  SecFilings8KParams,
+  SecFilings8KResponse,
+  SecFilings10KParams,
+  SecFilings10KResponse,
+  SecFilings10QParams,
+  SecFilings10QResponse,
+  SecFilingsOverviewResponse,
   SentimentItem,
   SentimentsParams,
   SovereignCdsSpreadItem,
@@ -269,6 +277,21 @@ export class EODHDClient {
   readonly realEstate: RealEstateApi;
 
   /**
+   * SEC Filings: parsed US SEC EDGAR filings for a symbol — overview of
+   * available forms, annual reports (10-K) and quarterly reports (10-Q) with
+   * extracted financials, and material-event disclosures (8-K).
+   *
+   * @example
+   * ```ts
+   * const res = await client.secFilings.secFilings10K('AAPL', { 'page[limit]': 5 });
+   * console.log(res.data[0].fiscal_year_end, res.data[0].net_income);
+   * ```
+   *
+   * @see https://eodhd.com/financial-apis/sec-filings-api
+   */
+  readonly secFilings: SecFilingsApi;
+
+  /**
    * Marketplace data providers (Unicorn Bay, Praams, InvestVerte).
    *
    * @example
@@ -335,6 +358,7 @@ export class EODHDClient {
     this.sanctions = new SanctionsApi(this.http);
     this.interestRates = new InterestRatesApi(this.http);
     this.realEstate = new RealEstateApi(this.http);
+    this.secFilings = new SecFilingsApi(this.http);
     this._screening = new ScreeningApi(this.http);
     this._corporate = new CorporateApi(this.http);
     this._user = new UserApi(this.http);
@@ -1176,6 +1200,80 @@ export class EODHDClient {
    */
   realEstateDetailedSeries(code: string): Promise<RealEstateDetailedSeriesResponse> {
     return this.realEstate.detailedSeries(code);
+  }
+
+  // ── SEC Filings ──
+
+  /**
+   * Fetch the SEC filings overview for a symbol: issuer identity plus a
+   * per-form summary (count, latest date, url) keyed by `10k`/`10q`/`8k`/`form4`.
+   *
+   * @param symbol - Ticker symbol, e.g. `AAPL`
+   * @returns Overview payload where `data` is a single object; `meta` and `links` are empty
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const res = await client.secFilingsOverview('AAPL');
+   * console.log(res.data.cik, res.data.filings['10k']?.latest);
+   * ```
+   */
+  secFilingsOverview(symbol: string): Promise<SecFilingsOverviewResponse> {
+    return this.secFilings.secFilingsOverview(symbol);
+  }
+
+  /**
+   * Fetch parsed annual reports (10-K) for a symbol, with extracted financials.
+   *
+   * @param symbol - Ticker symbol, e.g. `AAPL`
+   * @param params - Optional pagination (`page[offset]`, `page[limit]`)
+   * @returns Envelope with 10-K filing rows, meta, and links
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const res = await client.secFilings10K('AAPL', { 'page[limit]': 5 });
+   * console.log(res.data[0].fiscal_year_end, res.data[0].net_income);
+   * ```
+   */
+  secFilings10K(symbol: string, params?: SecFilings10KParams): Promise<SecFilings10KResponse> {
+    return this.secFilings.secFilings10K(symbol, params);
+  }
+
+  /**
+   * Fetch parsed quarterly reports (10-Q) for a symbol, with extracted financials.
+   *
+   * @param symbol - Ticker symbol, e.g. `AAPL`
+   * @param params - Optional pagination (`page[offset]`, `page[limit]`)
+   * @returns Envelope with 10-Q filing rows, meta, and links
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const res = await client.secFilings10Q('AAPL', { 'page[offset]': 20 });
+   * console.log(res.data[0].fiscal_quarter, res.data[0].fiscal_quarter_end);
+   * ```
+   */
+  secFilings10Q(symbol: string, params?: SecFilings10QParams): Promise<SecFilings10QResponse> {
+    return this.secFilings.secFilings10Q(symbol, params);
+  }
+
+  /**
+   * Fetch parsed material-event disclosures (8-K) for a symbol.
+   *
+   * @param symbol - Ticker symbol, e.g. `AAPL`
+   * @param params - Optional pagination (`page[offset]`, `page[limit]`)
+   * @returns Envelope with 8-K filing rows, meta, and links
+   * @throws {@link EODHDError} on API error
+   *
+   * @example
+   * ```ts
+   * const res = await client.secFilings8K('AAPL', { 'page[limit]': 10 });
+   * console.log(res.data[0].items, res.data[0].item_sections[0]?.title);
+   * ```
+   */
+  secFilings8K(symbol: string, params?: SecFilings8KParams): Promise<SecFilings8KResponse> {
+    return this.secFilings.secFilings8K(symbol, params);
   }
 
   // ── WebSocket ──
