@@ -1479,6 +1479,167 @@ export interface RealEstateDetailedSeriesResponse {
   [key: string]: unknown;
 }
 
+// ── SEC Filings ──
+
+/**
+ * Envelope shared by the paginated SEC Filings endpoints (10-K, 10-Q, 8-K).
+ * Pagination lives under `meta.page`, matching the shared JSON:API shape.
+ */
+export interface SecFilingsResponse<T> {
+  data: T[];
+  meta: JsonApiMeta;
+  links: JsonApiLinks;
+  [key: string]: unknown;
+}
+
+/** Per-form summary entry in the SEC Filings overview `filings` map. */
+export interface SecFilingsOverviewEntry {
+  count: number;
+  latest: string;
+  url: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Overview payload for a symbol: issuer identity plus a per-form summary keyed
+ * by `10k`, `10q`, `8k`, and `form4`.
+ */
+export interface SecFilingsOverview {
+  ticker: string;
+  exchange: string;
+  name: string;
+  cik: string;
+  filings: {
+    "10k"?: SecFilingsOverviewEntry;
+    "10q"?: SecFilingsOverviewEntry;
+    "8k"?: SecFilingsOverviewEntry;
+    form4?: SecFilingsOverviewEntry;
+    [key: string]: SecFilingsOverviewEntry | undefined;
+  };
+  [key: string]: unknown;
+}
+
+/**
+ * Response returned by the SEC Filings overview endpoint. `data` is a single
+ * object (not an array); `meta` and `links` are empty.
+ */
+export interface SecFilingsOverviewResponse {
+  data: SecFilingsOverview;
+  meta: [];
+  links: [];
+  [key: string]: unknown;
+}
+
+/**
+ * Extracted financial line items shared by the 10-K and 10-Q filing rows. Any
+ * numeric field may be `null` when the value could not be extracted.
+ */
+export interface SecFilingFinancials {
+  revenue: number | null;
+  cost_of_revenue: number | null;
+  gross_profit: number | null;
+  research_and_development: number | null;
+  selling_general_admin: number | null;
+  operating_expenses: number | null;
+  operating_income: number | null;
+  interest_expense: number | null;
+  interest_income: number | null;
+  income_before_tax: number | null;
+  income_tax_expense: number | null;
+  net_income: number | null;
+  ebitda: number | null;
+  depreciation_amortization: number | null;
+  eps_basic: number | null;
+  eps_diluted: number | null;
+  weighted_avg_shares_basic: number | null;
+  weighted_avg_shares_diluted: number | null;
+  shares_outstanding: number | null;
+  cash_and_equivalents: number | null;
+  short_term_investments: number | null;
+  accounts_receivable: number | null;
+  inventory: number | null;
+  total_current_assets: number | null;
+  property_plant_equipment: number | null;
+  goodwill: number | null;
+  intangible_assets: number | null;
+  total_assets: number | null;
+  accounts_payable: number | null;
+  short_term_debt: number | null;
+  total_current_liabilities: number | null;
+  long_term_debt: number | null;
+  total_liabilities: number | null;
+  common_stock: number | null;
+  retained_earnings: number | null;
+  stockholders_equity: number | null;
+  total_equity: number | null;
+  operating_cash_flow: number | null;
+  capital_expenditure: number | null;
+  free_cash_flow: number | null;
+  investing_cash_flow: number | null;
+  financing_cash_flow: number | null;
+  dividends_paid: number | null;
+  share_repurchase: number | null;
+}
+
+/** Filing-level metadata common to the 10-K and 10-Q rows. */
+export interface SecFilingRow extends SecFilingFinancials {
+  accession_number: string;
+  filed_at: string;
+  period_of_report: string;
+  [key: string]: unknown;
+}
+
+/** A single annual (10-K) filing row: metadata, fiscal year end, and financials. */
+export interface SecFiling10KRow extends SecFilingRow {
+  fiscal_year_end: string;
+}
+
+/** A single quarterly (10-Q) filing row: metadata, fiscal quarter info, and financials. */
+export interface SecFiling10QRow extends SecFilingRow {
+  fiscal_quarter_end: string;
+  fiscal_quarter: number;
+}
+
+/** A parsed 8-K item section. */
+export interface SecFiling8KItemSection {
+  item: string;
+  title: string;
+  text: string;
+  [key: string]: unknown;
+}
+
+/** An 8-K exhibit reference. */
+export interface SecFiling8KExhibit {
+  number: string;
+  description: string;
+  [key: string]: unknown;
+}
+
+/** A single material-events (8-K) filing row. */
+export interface SecFiling8KItem {
+  accession_number: string;
+  filed_at: string;
+  period_of_report: string;
+  items: string[];
+  item_sections: SecFiling8KItemSection[];
+  exhibits: SecFiling8KExhibit[];
+  [key: string]: unknown;
+}
+
+/** Query parameters for the paginated SEC Filings 10-K endpoint. */
+export type SecFilings10KParams = JsonApiPaginationParams;
+/** Query parameters for the paginated SEC Filings 10-Q endpoint. */
+export type SecFilings10QParams = JsonApiPaginationParams;
+/** Query parameters for the paginated SEC Filings 8-K endpoint. */
+export type SecFilings8KParams = JsonApiPaginationParams;
+
+/** Response returned by the SEC Filings 10-K (annual) endpoint. */
+export type SecFilings10KResponse = SecFilingsResponse<SecFiling10KRow>;
+/** Response returned by the SEC Filings 10-Q (quarterly) endpoint. */
+export type SecFilings10QResponse = SecFilingsResponse<SecFiling10QRow>;
+/** Response returned by the SEC Filings 8-K (material events) endpoint. */
+export type SecFilings8KResponse = SecFilingsResponse<SecFiling8KItem>;
+
 // ── WebSocket ──
 
 export type WebSocketFeed = "us" | "us-quote" | "forex" | "crypto";

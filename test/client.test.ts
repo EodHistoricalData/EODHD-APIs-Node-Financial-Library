@@ -401,6 +401,61 @@ describe("EODHDClient", () => {
     });
   });
 
+  // ── Delegation: SEC Filings ─────────────────────────────────────────────
+
+  describe("SEC Filings delegation", () => {
+    it("secFilingsOverview() calls /sec-filings/{symbol} with no pagination params", async () => {
+      const client = createClient();
+      await client.secFilingsOverview("AAPL");
+
+      expect(getCalledPathname(fetch)).toBe("/api/sec-filings/AAPL");
+      const p = getCalledParams(fetch);
+      expect(p.get("page[offset]")).toBeNull();
+      expect(p.get("page[limit]")).toBeNull();
+    });
+
+    it("secFilings10K() calls /sec-filings/{symbol}/10k", async () => {
+      const client = createClient();
+      await client.secFilings10K("AAPL");
+
+      expect(getCalledPathname(fetch)).toBe("/api/sec-filings/AAPL/10k");
+    });
+
+    it("secFilings10K() serializes pagination page[offset]=0 and page[limit]=100 (0 boundary kept)", async () => {
+      const client = createClient();
+      await client.secFilings10K("AAPL", { "page[offset]": 0, "page[limit]": 100 });
+
+      const p = getCalledParams(fetch);
+      expect(p.get("page[offset]")).toBe("0");
+      expect(p.get("page[limit]")).toBe("100");
+    });
+
+    it("secFilings10Q() calls /sec-filings/{symbol}/10q with pagination", async () => {
+      const client = createClient();
+      await client.secFilings10Q("AAPL", { "page[offset]": 20, "page[limit]": 50 });
+
+      expect(getCalledPathname(fetch)).toBe("/api/sec-filings/AAPL/10q");
+      const p = getCalledParams(fetch);
+      expect(p.get("page[offset]")).toBe("20");
+      expect(p.get("page[limit]")).toBe("50");
+    });
+
+    it("secFilings8K() calls /sec-filings/{symbol}/8k with pagination", async () => {
+      const client = createClient();
+      await client.secFilings8K("AAPL", { "page[limit]": 10 });
+
+      expect(getCalledPathname(fetch)).toBe("/api/sec-filings/AAPL/8k");
+      expect(getCalledParams(fetch).get("page[limit]")).toBe("10");
+    });
+
+    it("encodes the symbol in the path", async () => {
+      const client = createClient();
+      await client.secFilings10K("BRK/B");
+
+      expect(getCalledUrl(fetch)).toContain("/sec-filings/BRK%2FB/10k");
+    });
+  });
+
   // ── Delegation: Macro ───────────────────────────────────────────────────
 
   describe("Macro delegation", () => {
