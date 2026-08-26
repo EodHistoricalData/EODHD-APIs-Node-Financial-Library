@@ -1186,8 +1186,8 @@ export class EODHDClient {
    * @param feed - Feed type: `"us"` (trades), `"us-quote"` (quotes), `"forex"`, or `"crypto"`
    * @param symbols - Array of symbols to subscribe to, e.g. `["AAPL", "MSFT"]`
    * @param options - Optional reconnect settings (maxReconnectAttempts, reconnectInterval)
-   * @returns Connected {@link EODHDWebSocket} instance
-   * @see https://eodhd.com/financial-apis/live-realtime-stocks-api/
+   * @returns Connected {@link EODHDWebSocket} instance, typed to the feed
+   * @see https://eodhd.com/financial-apis/new-real-time-data-api-websockets
    *
    * @example
    * ```ts
@@ -1197,7 +1197,7 @@ export class EODHDClient {
    * // Later: ws.close();
    * ```
    */
-  websocket(feed: WebSocketFeed, symbols: string[], options?: WebSocketOptions): EODHDWebSocket {
-    return new EODHDWebSocket(this.apiToken, feed, symbols, options).connect();
+  websocket<F extends WebSocketFeed>(feed: F, symbols: string[], options?: WebSocketOptions): EODHDWebSocket<F> {
+    return new EODHDWebSocket<F>(this.apiToken, feed, symbols, options).connect();
   }
 }
