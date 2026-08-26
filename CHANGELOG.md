@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.0 (2026-08-26)
 
 ### Added
 
@@ -8,10 +8,16 @@
 - **Sanctions API** (`client.sanctions.*`) — 4 endpoints: OFAC-sourced sanctioned entities and vessels, plus programs and sources listings
 - **Interest Rates & Spreads API** (`client.interestRates.*`) — 3 endpoints: reference rates (SOFR/SONIA/ESTR), central bank policy rates, and funding-stress spreads
 - Top-level convenience aliases on `EODHDClient` for all 14 new methods
+- **Real-time WebSocket: all ten markets** — the European equity streams (`eu`, `eu-quote`) and the derived ones (`us-candles`, `eu-candles`, `us-status`, `eu-status`) alongside the existing `us`, `us-quote`, `forex` and `crypto`
+- Per-feed message types selected by the feed: `WebSocketTradeMessage`, `WebSocketQuoteMessage`, `WebSocketCandleMessage`, `WebSocketStatusMessage`, `WebSocketForexMessage`, `WebSocketCryptoMessage`, mapped through `WebSocketMessageFor`. `client.websocket("us-candles", …)` now types its data listener as a candle
 
 ### Changed
 
 - **Sanctions API** — entity and vessel IDs are optional to match production responses
+
+### Fixed
+
+- **WebSocket control frames were delivered as market data.** The filter checked only `status_code`, but an authentication failure arrives as `{"status": 403}` — a different key — and it arrives over the socket *after* a successful handshake. A wrong token therefore reached the `data` listener looking like a tick, and the client then reconnected to be refused again. Token and market rejections are now reported as errors and are terminal; recoverable rejections (bad subscribe, symbol cap, demo allowlist, connection cap) are surfaced without closing the stream instead of being swallowed
 
 ## 1.0.0 (2026-03-04)
 
