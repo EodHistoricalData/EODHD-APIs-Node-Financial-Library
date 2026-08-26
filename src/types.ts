@@ -1481,17 +1481,200 @@ export interface RealEstateDetailedSeriesResponse {
 
 // ── WebSocket ──
 
-export type WebSocketFeed = "us" | "us-quote" | "forex" | "crypto";
+/**
+ * Markets served by the real-time WebSocket.
+ *
+ * The Cboe equity markets each expose four streams — trades, quotes, one-minute bars and
+ * trading status. `forex` and `crypto` come from separate providers and have trades only.
+ */
+export type WebSocketFeed =
+  | "us"
+  | "us-quote"
+  | "us-candles"
+  | "us-status"
+  | "eu"
+  | "eu-quote"
+  | "eu-candles"
+  | "eu-status"
+  | "forex"
+  | "crypto";
 
 export interface WebSocketOptions {
   maxReconnectAttempts?: number;
   reconnectInterval?: number;
 }
 
+/**
+ * Permissive message shape, kept as the default so existing code keeps compiling.
+ * Prefer the per-feed types below, which the generic {@link EODHDWebSocket} selects
+ * automatically when the feed is known at the call site.
+ */
 export interface WebSocketTick {
   s: string;
   p: number;
   v?: number;
   t: number;
   [key: string]: unknown;
+}
+
+/**
+ * Equity trade, on `us` and `eu`.
+ *
+ * `c` is the trade-conditions array and is **always empty** on this feed — the exchange
+ * top-of-book source carries no per-trade sale conditions. `dp` is always false for the same
+ * reason: a single lit venue has no off-exchange or FINRA TRF prints.
+ */
+export interface WebSocketTradeMessage extends WebSocketTick {
+  /** Ticker. On `eu` this is the canonical EODHD form, hyphen included. */
+  s: string;
+  /** Last trade price. May arrive without a decimal part when the venue quotes whole units. */
+  p: number;
+  /** Trade conditions. Always an empty array on this feed. */
+  c: unknown[];
+  /** Trade size in shares. */
+  v: number;
+  /** Dark-pool flag. Always false on this feed. */
+  dp: boolean;
+  /** Session state of the market. */
+  ms: "open" | "closed" | "extended-hours";
+  /** Event timestamp, epoch milliseconds UTC. */
+  t: number;
+  [key: string]: unknown;
+}
+
+/** Top-of-book quote, on `us-quote` and `eu-quote`. EU quotes are consolidated across Cboe BXE, CXE and DXE. */
+export interface WebSocketQuoteMessage {
+  s: string;
+  /** Ask price. */
+  ap: number;
+  /** Ask size in shares. */
+  as: number;
+  /** Bid price. */
+  bp: number;
+  /** Bid size in shares. */
+  bs: number;
+  t: number;
+  [key: string]: unknown;
+}
+
+/**
+ * Rolling one-minute bar, on `us-candles` and `eu-candles`.
+ *
+ * Two traps worth knowing. `c` is the CLOSE price here, whereas on the trade streams `c` is
+ * the conditions array. And the current bar is re-sent on every update, so the same `t`
+ * arrives repeatedly with a growing `v` — take the newest message per `t`, never sum them.
+ */
+export interface WebSocketCandleMessage {
+  s: string;
+  /** Bar interval, currently always `"1m"`. */
+  i: string;
+  /** Bar OPEN time, epoch milliseconds UTC. */
+  t: number;
+  o: number;
+  h: number;
+  l: number;
+  /** Close price — not the conditions array. */
+  c: number;
+  /** Volume in shares accumulated within the bar. */
+  v: number;
+  [key: string]: unknown;
+}
+
+/**
+ * Trading status, on `us-status` and `eu-status`.
+ *
+ * `h` is the venue's own status code — `"T"` while an instrument trades normally. Other codes
+ * are issued by the venue on halts, pauses and auctions and are not translated here. `r` is a
+ * reason code, empty on the European stream and `"0"` on the US one when there is nothing to
+ * report.
+ */
+export interface WebSocketStatusMessage {
+  s: string;
+  h: string;
+  r: string;
+  t: number;
+  [key: string]: unknown;
+}
+
+/** FX quote, on `forex`. Note `a` and `b` are numbers while `dc` and `dd` are strings. */
+export interface WebSocketForexMessage {
+  s: string;
+  /** Ask. */
+  a: number;
+  /** Bid. */
+  b: number;
+  /** Daily change percent, as a string. */
+  dc: string;
+  /** Daily change absolute, as a string. */
+  dd: string;
+  /** Provider session flag. */
+  ppms: boolean;
+  t: number;
+  [key: string]: unknown;
+}
+
+/**
+ * Crypto trade, on `crypto`.
+ *
+ * Every numeric field is a **string** — the provider's own text is re-emitted verbatim so our
+ * formatting matches theirs exactly. `q` may use exponent notation, e.g. `"1.9e-7"`, so parse
+ * it as a number rather than assuming plain decimal text.
+ */
+export interface WebSocketCryptoMessage {
+  s: string;
+  p: string;
+  q: string;
+  dc: string;
+  dd: string;
+  t: number;
+  [key: string]: unknown;
+}
+
+/** Any message the real-time feed can deliver. */
+export type WebSocketMessage =
+  | WebSocketTradeMessage
+  | WebSocketQuoteMessage
+  | WebSocketCandleMessage
+  | WebSocketStatusMessage
+  | WebSocketForexMessage
+  | WebSocketCryptoMessage;
+
+/**
+ * Message type for a given feed.
+ *
+ * The comparisons are tuple-wrapped so the conditional does not distribute: when the feed is
+ * the whole {@link WebSocketFeed} union — which is the default, and what pre-existing code
+ * gets — no branch matches and the permissive {@link WebSocketTick} is used, so nothing that
+ * compiled before stops compiling.
+ */
+export type WebSocketMessageFor<F extends WebSocketFeed> = [F] extends ["us" | "eu"]
+  ? WebSocketTradeMessage
+  : [F] extends ["us-quote" | "eu-quote"]
+    ? WebSocketQuoteMessage
+    : [F] extends ["us-candles" | "eu-candles"]
+      ? WebSocketCandleMessage
+      : [F] extends ["us-status" | "eu-status"]
+        ? WebSocketStatusMessage
+        : [F] extends ["forex"]
+          ? WebSocketForexMessage
+          : [F] extends ["crypto"]
+            ? WebSocketCryptoMessage
+            : WebSocketTick;
+
+/**
+ * Control frame from the real-time service.
+ *
+ * The service uses two shapes and the KEY is the discriminator. An authentication failure
+ * arrives as `{ status: 403 }` and comes over the socket *after* a successful handshake, so a
+ * connection opening is not evidence the token was accepted. Everything else uses
+ * `status_code`: the 200 ack, 404 for an unknown market, the 422 family for bad subscribe
+ * commands, 429 for the connection cap, 500.
+ *
+ * 422 appears under both keys and means opposite things — as `status` the token is missing
+ * and the connection is dead; as `status_code` one command was wrong and the stream is fine.
+ */
+export interface WebSocketControlFrame {
+  status?: number;
+  status_code?: number;
+  message?: string;
 }

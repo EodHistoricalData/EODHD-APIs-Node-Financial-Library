@@ -295,4 +295,149 @@ describe("EODHDWebSocket", () => {
 
     expect(reconnectHandler).not.toHaveBeenCalled();
   });
+
+  // ─── Control frames: two shapes, and the key is the discriminator ───────
+
+  it("does not deliver a status_code control frame as data", () => {
+    const ws = createWs();
+    const handler = vi.fn();
+    ws.on("data", handler);
+    ws.connect();
+    latestWs().simulateOpen();
+
+    latestWs().simulateMessage({ status_code: 200, message: "Authorized" });
+
+    expect(handler).not.toHaveBeenCalled();
+  });
+
+  it("does not deliver a status-keyed auth denial as data, and reports it as an error", () => {
+    // Regression: the filter only checked "status_code", so { status: 403 } reached the
+    // data listener as if it were a tick. A wrong token produced a fake market message.
+    const ws = createWs();
+    const data = vi.fn();
+    const errors: Error[] = [];
+    ws.on("data", data);
+    ws.on("error", (e) => errors.push(e));
+    ws.connect();
+    latestWs().simulateOpen();
+
+    latestWs().simulateMessage({ status: 403, message: "Server error" });
+
+    expect(data).not.toHaveBeenCalled();
+    expect(errors).toHaveLength(1);
+    expect(errors[0].message).toContain("403");
+    expect(errors[0].message).toContain("real-time access");
+  });
+
+  it("stops reconnecting after an auth denial", () => {
+    // The server refuses the token, closes, and the old code reconnected to be refused
+    // again up to maxReconnectAttempts times.
+    const ws = createWs(["AAPL"], { maxReconnectAttempts: 5, reconnectInterval: 1000 });
+    ws.on("error", () => {});
+    ws.connect();
+    const before = instances.length;
+    latestWs().simulateOpen();
+
+    latestWs().simulateMessage({ status: 422, message: "Server error" });
+    latestWs().simulateClose();
+    vi.advanceTimersByTime(60_000);
+
+    expect(instances.length).toBe(before);
+  });
+
+  // ─── Every served market is reachable ───────────────────────────────────
+
+  it.each([
+    "us",
+    "us-quote",
+    "us-candles",
+    "us-status",
+    "eu",
+    "eu-quote",
+    "eu-candles",
+    "eu-status",
+    "forex",
+    "crypto",
+  ] as const)("connects to the %s market at the right path", (feed) => {
+    const ws = new EODHDWebSocket("test-token", feed, ["AAPL"]);
+    ws.connect();
+    expect(instances).toHaveLength(1);
+  });
+
+  it("passes European symbols through untouched", () => {
+    const ws = new EODHDWebSocket("test-token", "eu", ["GSK.LSE", "ERIC-B.ST"]);
+    ws.connect();
+    const mock = latestWs();
+    mock.simulateOpen();
+    expect(JSON.parse(mock.sent[0])).toEqual({
+      action: "subscribe",
+      symbols: "GSK.LSE,ERIC-B.ST",
+    });
+  });
+
+  it("surfaces a recoverable command rejection without closing the stream", () => {
+    // Previously every status_code frame was swallowed, so a caller who hit the symbol cap
+    // saw no data and no reason for it.
+    const ws = createWs();
+    const data = vi.fn();
+    const errors: Error[] = [];
+    ws.on("data", data);
+    ws.on("error", (e) => errors.push(e));
+    ws.connect();
+    latestWs().simulateOpen();
+
+    latestWs().simulateMessage({ status_code: 422, message: "Symbols limit reached" });
+
+    expect(errors).toHaveLength(1);
+    expect(errors[0].message).toContain("Symbols limit reached");
+    // ...and the stream is still alive
+    const tick = { s: "AAPL", p: 1, c: [], v: 1, dp: false, ms: "open", t: 1 };
+    latestWs().simulateMessage(tick);
+    expect(data).toHaveBeenCalledWith(tick);
+  });
+
+  it("treats an unknown market as terminal and stops reconnecting", () => {
+    const ws = createWs(["AAPL"], { maxReconnectAttempts: 5, reconnectInterval: 1000 });
+    const errors: Error[] = [];
+    ws.on("error", (e) => errors.push(e));
+    ws.connect();
+    const before = instances.length;
+    latestWs().simulateOpen();
+
+    latestWs().simulateMessage({ status_code: 404, message: "No market 'nope' found" });
+    latestWs().simulateClose();
+    vi.advanceTimersByTime(60_000);
+
+    expect(errors[0].message).toContain("404");
+    expect(instances.length).toBe(before);
+  });
+
+  it("does not mistake a market message carrying a status-like field for a control frame", () => {
+    const ws = createWs();
+    const data = vi.fn();
+    ws.on("data", data);
+    ws.connect();
+    latestWs().simulateOpen();
+
+    // Contrived, but this is the guard: a symbol is present, so it is data.
+    const tick = { s: "AAPL", p: 1, t: 1, status: 7 };
+    latestWs().simulateMessage(tick);
+
+    expect(data).toHaveBeenCalledWith(tick);
+  });
+
+  it("ignores the 200 authorization ack", () => {
+    const ws = createWs();
+    const data = vi.fn();
+    const errors: Error[] = [];
+    ws.on("data", data);
+    ws.on("error", (e) => errors.push(e));
+    ws.connect();
+    latestWs().simulateOpen();
+
+    latestWs().simulateMessage({ status_code: 200, message: "Authorized" });
+
+    expect(data).not.toHaveBeenCalled();
+    expect(errors).toHaveLength(0);
+  });
 });
