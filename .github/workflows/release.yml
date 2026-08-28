@@ -22,12 +22,18 @@ jobs:
           node-version: 22
           registry-url: https://registry.npmjs.org
           cache: npm
+      # Node 22 ships npm 10.x, and OIDC trusted publishing needs >= 11.5.1. Without this
+      # the publish falls back to looking for a token and fails on an account that requires
+      # 2FA — which is exactly how this workflow failed twice before the switch.
+      - run: npm install -g npm@latest
       - run: npm ci
       - run: npm run typecheck
       - run: npm run test:unit
       - run: npm run build
+      # Published via OIDC trusted publishing: the package is bound to this repository and
+      # this workflow on npm, so there is no token to store, rotate or expire, and 2FA does
+      # not enter into it. `id-token: write` above is what makes the identity available, and
+      # provenance is signed from the same identity.
       - name: Publish to npm
         if: ${{ !inputs.dry-run }}
         run: npm publish --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
