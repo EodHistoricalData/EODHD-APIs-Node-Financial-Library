@@ -14,9 +14,17 @@ permissions:
 
 jobs:
   publish:
+    # workflow_dispatch runs against whatever ref the operator picks, and checkout
+    # defaults to that ref — so without this guard a dispatch from a feature branch or
+    # an old tag would publish that content to npm under whatever version its
+    # package.json happens to carry. Guarded twice on purpose: the condition stops the
+    # run, the explicit ref makes what is published deterministic if it ever starts.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: refs/heads/main
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -25,7 +33,12 @@ jobs:
       # Node 22 ships npm 10.x, and OIDC trusted publishing needs >= 11.5.1. Without this
       # the publish falls back to looking for a token and fails on an account that requires
       # 2FA — which is exactly how this workflow failed twice before the switch.
-      - run: npm install -g npm@latest
+      #
+      # Pinned rather than @latest: this step runs inside the pipeline that signs and
+      # publishes the package, so "whatever npm shipped today" is both a reproducibility
+      # problem and an unnecessary supply-chain surface. Raise it deliberately.
+      - run: npm install -g npm@11.7.0
+      - run: npm --version
       - run: npm ci
       - run: npm run typecheck
       - run: npm run test:unit
