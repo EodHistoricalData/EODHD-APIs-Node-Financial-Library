@@ -573,6 +573,18 @@ describe("EODHDClient", () => {
 
       expect(getCalledUrl(fetch)).toContain("/ust/real-yield-rates");
     });
+
+    it("forwards filter[year] and does not add pagination/date params", async () => {
+      const client = createClient();
+      await client.treasury.yieldRates({ "filter[year]": 2024 });
+
+      const url = getCalledUrl(fetch);
+      expect(url).toContain("filter%5Byear%5D=2024");
+      expect(url).not.toContain("page%5Blimit%5D");
+      expect(url).not.toContain("page%5Boffset%5D");
+      expect(url).not.toMatch(/[?&]from=/);
+      expect(url).not.toMatch(/[?&]to=/);
+    });
   });
 
   // ── CBOE (direct property) ──────────────────────────────────────────────

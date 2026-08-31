@@ -180,7 +180,7 @@ export class EODHDClient {
    *
    * @example
    * ```ts
-   * const bills = await client.treasury.billRates({ from: '2024-01-01' });
+   * const bills = await client.treasury.billRates({ 'filter[year]': 2024 });
    * ```
    *
    * @see https://eodhd.com/financial-apis/us-treasury-rates-api/
