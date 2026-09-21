@@ -61,8 +61,12 @@ export class UnicornBayApi {
     return this.http.get(`/mp/unicornbay/tickdata/ticks`, { s: symbol, ...params });
   }
 
-  /** Stock market logo: GET /mp/unicornbay/logo/{symbol} */
+  /**
+   * Stock market logo (Marketplace: Stock Market Logos API subscription): GET /logo/{symbol}
+   * Note: despite the "unicornbay" namespace, this marketplace product is served from the
+   * plain /logo/{symbol} endpoint — /mp/unicornbay/logo/{symbol} is not a real backend route.
+   */
   async logo(symbol: Ticker): Promise<ArrayBuffer> {
-    return this.http.getBuffer(`/mp/unicornbay/logo/${encodeURIComponent(symbol)}`);
+    return this.http.getBuffer(`/logo/${encodeURIComponent(symbol)}`);
   }
 }
