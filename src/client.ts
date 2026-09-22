@@ -677,7 +677,7 @@ export class EODHDClient {
   }
 
   /**
-   * Search for stocks, ETFs, funds, bonds, indices, or crypto by query string.
+   * Search for stocks, ETFs, funds, indices, or crypto by query string.
    *
    * @param query - Search query, e.g. `"Apple"`, `"AAPL"`
    * @param params - Optional limit, exchange filter, instrument type

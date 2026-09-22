@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EODHDClient } from "../src/client.js";
+import type { SearchParams } from "../src/types.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -367,6 +368,21 @@ describe("EODHDClient", () => {
       expect(url).toContain("/search/Apple");
       expect(url).toContain("limit=10");
       expect(url).toContain("type=stock");
+    });
+
+    it("search() drops an unsupported type: 'bond' and warns instead of forwarding it", async () => {
+      const client = createClient();
+      const emitWarningSpy = vi.spyOn(process, "emitWarning").mockImplementation(() => {});
+
+      await client.search("Apple", { limit: 10, type: "bond" as unknown as SearchParams["type"] });
+
+      const url = getCalledUrl(fetch);
+      expect(url).toContain("/search/Apple");
+      expect(url).toContain("limit=10");
+      expect(url).not.toContain("type=bond");
+      expect(emitWarningSpy).toHaveBeenCalledWith(expect.stringContaining('"bond"'), "DeprecationWarning");
+
+      emitWarningSpy.mockRestore();
     });
 
     it("idMapping() calls /id-mapping", async () => {
