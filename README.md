@@ -189,10 +189,10 @@ const screened = await client.screener({
   limit: 10,
 });
 
-// Search stocks/ETFs/bonds
+// Search stocks/ETFs/funds
 const results = await client.search('Apple', {
   limit: 10,
-  type: 'stock', // 'all', 'stock', 'etf', 'fund', 'bond', 'index', 'crypto'
+  type: 'stock', // 'all', 'stock', 'etf', 'fund', 'index', 'crypto'
 });
 
 // ID mapping (ISIN, CUSIP, FIGI, LEI, CIK)

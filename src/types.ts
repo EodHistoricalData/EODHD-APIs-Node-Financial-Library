@@ -306,7 +306,7 @@ export interface InsiderTransactionItem {
 export interface SearchParams {
   limit?: number;
   exchange?: string;
-  type?: "all" | "stock" | "etf" | "fund" | "bond" | "index" | "crypto";
+  type?: "all" | "stock" | "etf" | "fund" | "index" | "crypto";
 }
 
 export interface SearchResult {
