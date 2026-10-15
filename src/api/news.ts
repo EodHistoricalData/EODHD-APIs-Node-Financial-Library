@@ -11,7 +11,7 @@ import type {
 export class NewsApi {
   constructor(private http: HttpClient) {}
 
-  /** Financial news: GET /news */
+  /** Financial news: GET /news. `offset` max is 9000; narrow the period with `from`/`to` to reach older articles. */
   async news(params: NewsParams = {}): Promise<NewsArticle[]> {
     return this.http.get("/news", params);
   }
