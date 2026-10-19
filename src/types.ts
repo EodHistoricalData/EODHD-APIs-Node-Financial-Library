@@ -326,7 +326,8 @@ export interface Form4NonDerivative {
   shares_amount: number;
   price_per_share: number | null;
   shares_owned_after: number;
-  total_value: number | null;  footnote_refs?: Record<string, string[]> | never[];
+  total_value: number | null;
+  footnote_refs?: Record<string, string[]> | [];
   footnote_ids?: string[];
 }
 
@@ -344,7 +345,8 @@ export interface Form4Derivative {
   underlying_security_title: string | null;
   underlying_shares: number | null;
   exercise_date: string | null;
-  expiration_date: string | null;  footnote_refs?: Record<string, string[]> | never[];
+  expiration_date: string | null;
+  footnote_refs?: Record<string, string[]> | [];
   footnote_ids?: string[];
 }
 
