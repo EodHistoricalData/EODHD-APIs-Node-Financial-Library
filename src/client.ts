@@ -776,10 +776,7 @@ export class EODHDClient {
    * }
    * ```
    */
-  insiderTransactionsV2(
-    symbol: string,
-    params?: InsiderTransactionsV2Params,
-  ): Promise<InsiderTransactionsV2Response> {
+  insiderTransactionsV2(symbol: string, params?: InsiderTransactionsV2Params): Promise<InsiderTransactionsV2Response> {
     return this._corporate.insiderTransactionsV2(symbol, params);
   }
 
