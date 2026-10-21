@@ -11,7 +11,11 @@ import type {
 export class NewsApi {
   constructor(private http: HttpClient) {}
 
-  /** Financial news: GET /news. `offset` max is 9000; narrow the period with `from`/`to` to reach older articles. */
+  /**
+   * Financial news: GET /news. `offset` max is 10000 and `offset + limit` must not exceed 10000;
+   * narrow the period with `from`/`to` to reach older articles. `direction: 1` returns articles in
+   * database-entry order for duplicate-free forward paging (requires `from` and `to`, window up to 31 days).
+   */
   async news(params: NewsParams = {}): Promise<NewsArticle[]> {
     return this.http.get("/news", params);
   }

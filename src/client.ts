@@ -603,7 +603,7 @@ export class EODHDClient {
   /**
    * Fetch financial news articles.
    *
-   * @param params - Optional symbol filter (`s`), tag filter (`t`), date range, pagination
+   * @param params - Optional symbol filter (`s`), tag filter (`t`), date range, pagination, `direction` (0 = newest first, 1 = database order; needs `from`/`to`, max 31 days)
    * @returns Array of news articles with sentiment scores
    * @throws {@link EODHDError} on API error
    * @see https://eodhd.com/financial-apis/financial-news-api/

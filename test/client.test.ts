@@ -330,6 +330,17 @@ describe("EODHDClient", () => {
       expect(url).toContain("limit=5");
     });
 
+    it("news() forwards direction", async () => {
+      const client = createClient();
+      await client.news({ from: "2026-10-01", to: "2026-10-07", direction: 1, offset: 10 });
+
+      const url = getCalledUrl(fetch);
+      expect(url).toContain("/news");
+      expect(url).toContain("direction=1");
+      expect(url).toContain("from=2026-10-01");
+      expect(url).toContain("to=2026-10-07");
+    });
+
     it("sentiments() calls /sentiments", async () => {
       const client = createClient();
       await client.sentiments({ s: "AAPL.US" });

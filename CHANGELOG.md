@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **News API** — `direction` param (`0` newest first, default; `1` database-entry order for duplicate-free forward paging with `offset`; requires `from` and `to`, window up to 31 days)
+
+### Changed
+
+- **News API** — `offset` cap raised to 10000 (`offset + limit` must not exceed 10000)
+
 ## 1.1.0 (2026-08-26)
 
 ### Added
