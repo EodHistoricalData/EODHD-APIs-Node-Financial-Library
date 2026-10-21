@@ -427,6 +427,12 @@ export interface NewsParams extends Pagination {
   t?: string;
   from?: DateString;
   to?: DateString;
+  /**
+   * Ordering: `0` (default) = newest first; `1` = articles in the order they entered
+   * the database, so you can page forward with `offset` without duplicates.
+   * With `direction: 1`, `from` and `to` are required and the window must not exceed 31 days.
+   */
+  direction?: 0 | 1;
 }
 
 export interface NewsArticle {
