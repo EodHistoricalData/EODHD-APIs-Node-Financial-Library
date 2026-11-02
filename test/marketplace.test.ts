@@ -72,10 +72,12 @@ describe("Marketplace: Unicorn Bay", () => {
     expect(url).toContain("s=AAPL");
   });
 
-  it("logo() calls /mp/unicornbay/logo/{symbol}", async () => {
+  it("logo() calls /logo/{symbol} (Stock Market Logos API subscription)", async () => {
     const client = createClient();
     await client.marketplace.unicornbay.logo("AAPL.US");
-    expect(getCalledUrl(fetch)).toContain("/mp/unicornbay/logo/AAPL.US");
+    const url = getCalledUrl(fetch);
+    expect(url).toContain("/logo/AAPL.US");
+    expect(url).not.toContain("/mp/unicornbay/logo/");
   });
 });
 
