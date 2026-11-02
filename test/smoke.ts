@@ -94,10 +94,10 @@ async function main() {
 
   // ── Treasury ──
   console.log("\nTreasury:");
-  await test("treasury.billRates", () => client.treasury.billRates({ from: "2025-01-01", to: "2025-01-10" }));
-  await test("treasury.yieldRates", () => client.treasury.yieldRates({ from: "2025-01-01", to: "2025-01-10" }));
-  await test("treasury.longTermRates", () => client.treasury.longTermRates({ from: "2025-01-01", to: "2025-01-10" }));
-  await test("treasury.realYieldRates", () => client.treasury.realYieldRates({ from: "2025-01-01", to: "2025-01-10" }));
+  await test("treasury.billRates", () => client.treasury.billRates({ "filter[year]": 2024 }));
+  await test("treasury.yieldRates", () => client.treasury.yieldRates({ "filter[year]": 2024 }));
+  await test("treasury.longTermRates", () => client.treasury.longTermRates({ "filter[year]": 2024 }));
+  await test("treasury.realYieldRates", () => client.treasury.realYieldRates());
 
   // ── CBOE ──
   console.log("\nCBOE:");

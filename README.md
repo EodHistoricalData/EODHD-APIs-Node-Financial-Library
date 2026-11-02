@@ -233,10 +233,13 @@ const events = await client.economicEvents({
 ### US Treasury Rates
 
 ```typescript
-const bills = await client.treasury.billRates({ from: '2025-01-01' });
-const yields = await client.treasury.yieldRates({ from: '2025-01-01' });
-const longTerm = await client.treasury.longTermRates({ from: '2025-01-01' });
-const realYield = await client.treasury.realYieldRates({ from: '2025-01-01' });
+// The UST endpoints have no pagination or date-range filters — the only
+// filter is the calendar year (defaults to the current year). Each call
+// returns a { meta, data, links } envelope; the rates are in `res.data`.
+const bills = await client.treasury.billRates({ 'filter[year]': 2024 });
+const yields = await client.treasury.yieldRates({ 'filter[year]': 2024 });
+const longTerm = await client.treasury.longTermRates({ 'filter[year]': 2024 });
+const realYield = await client.treasury.realYieldRates(); // current year
 ```
 
 ### CBOE Europe Indices
