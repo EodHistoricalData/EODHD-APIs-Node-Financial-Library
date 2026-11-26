@@ -1750,3 +1750,192 @@ export interface WebSocketControlFrame {
   status_code?: number;
   message?: string;
 }
+
+// ── ETF Holdings (beta, US-listed ETFs, SEC N-PORT) ──
+
+/** General information about a fund in the ETF Holdings response. */
+export interface EtfHoldingsGeneral {
+  Code: string;
+  /** Always `"ETF"`. */
+  Type: string;
+  Name: string;
+  /** Always `"US"`. */
+  Exchange: string;
+  Issuer: string;
+  /** Fund type, for example `"etf"`. */
+  Fund_Type: string;
+  /** Net assets in USD. */
+  Net_Assets: number;
+  /** End of the filing period (not the request date). */
+  Report_Date: DateString;
+  /** Data source, for example `"nport"`. */
+  Source: string;
+  Is_Complete: boolean;
+  /** Share of fund weight whose positions have a ticker, in percent. */
+  "Mapped_Weight_%": number;
+  /** Number of positions in the filing itself. */
+  Filed_Positions_Count: number;
+  [key: string]: unknown;
+}
+
+/** One position held by an ETF. */
+export interface EtfHoldingsPosition {
+  Code: string | null;
+  Exchange: string | null;
+  Name: string;
+  Sector: string | null;
+  Industry: string | null;
+  /** Country name, for example `"United States"`. */
+  Country: string;
+  /** Two-letter country code. */
+  Country_Code: string;
+  Region: string | null;
+  /** Weight in percent. Can be negative; the sum of all weights can be above or below 100. */
+  "Assets_%": number;
+  Shares: number;
+  Value_USD: number;
+  /** Option or other derivative contract identifier. */
+  Contract_Code: string | null;
+  [key: string]: unknown;
+}
+
+/**
+ * Positions keyed by position key (`CODE.EXCHANGE`, for example `NVDA.US`).
+ * Treat keys as opaque: a position without a ticker gets another key.
+ */
+export type EtfHoldingsPositions = Record<string, EtfHoldingsPosition>;
+
+/** Long, short and net weight of one asset class, in percent. */
+export interface EtfAssetAllocationItem {
+  "Long_%": number;
+  "Short_%": number;
+  "Net_Assets_%": number;
+  [key: string]: unknown;
+}
+
+/** Asset allocation of the fund. */
+export interface EtfAssetAllocation {
+  Cash: EtfAssetAllocationItem;
+  Bond: EtfAssetAllocationItem;
+  Stock_US: EtfAssetAllocationItem;
+  "Stock_non-US": EtfAssetAllocationItem;
+  Other: EtfAssetAllocationItem;
+  [key: string]: unknown;
+}
+
+/** Equity weight of one sector, in percent. */
+export interface EtfSectorWeight {
+  "Equity_%": number;
+  [key: string]: unknown;
+}
+
+/** Equity weight of one world region, in percent. */
+export interface EtfWorldRegionWeight {
+  "Equity_%": number;
+  [key: string]: unknown;
+}
+
+/** Fund performance and risk figures. Each value can be null. */
+export interface EtfPerformance {
+  Returns_YTD: number | null;
+  Returns_1Y: number | null;
+  Returns_3Y: number | null;
+  Returns_5Y: number | null;
+  Returns_10Y: number | null;
+  "1y_Volatility": number | null;
+  "3y_Volatility": number | null;
+  "3y_SharpRatio": number | null;
+  [key: string]: unknown;
+}
+
+/** The `data` object of the ETF Holdings response. */
+export interface EtfHoldingsData {
+  General: EtfHoldingsGeneral;
+  /** An empty array `[]` (not an object) for a fund with no positions. */
+  Holdings: EtfHoldingsPositions | [];
+  /** The ten largest positions. An empty array `[]` for a fund with no positions. */
+  Top_10_Holdings: EtfHoldingsPositions | [];
+  /** Number of entries in `Holdings` (lots of one security are summed). */
+  Holdings_Count: number;
+  Asset_Allocation: EtfAssetAllocation;
+  /** Equities only. Empty object for funds without equities. May contain `Unclassified`. */
+  Sector_Weights: Record<string, EtfSectorWeight>;
+  /** Equities only. Empty object for funds without equities. May contain `Unclassified`. */
+  World_Regions: Record<string, EtfWorldRegionWeight>;
+  Performance: EtfPerformance | null;
+  [key: string]: unknown;
+}
+
+/** Response of the ETF Holdings endpoint. `meta` and `links` are empty lists. */
+export interface EtfHoldingsResponse {
+  data: EtfHoldingsData;
+  meta: [];
+  links: [];
+  [key: string]: unknown;
+}
+
+/** Query parameters of the ETF held-by endpoint. */
+export interface EtfHeldByParams {
+  /** Number of funds to skip. Zero-based. Default: 0. */
+  "page[offset]"?: number;
+  /** Number of funds to return. Range 1 to 5000. Default: 100. */
+  "page[limit]"?: number;
+}
+
+/** The security that is looked up in the ETF held-by response. */
+export interface EtfHeldBySecurity {
+  ticker: string;
+  exchange: string;
+  name: string;
+  [key: string]: unknown;
+}
+
+/** One fund that holds the looked-up security. */
+export interface EtfHeldByFund {
+  ticker: string;
+  name: string;
+  /** Weight of the security in the fund, in percent. */
+  weight: number;
+  shares: number;
+  value_usd: number;
+  report_date: DateString;
+  [key: string]: unknown;
+}
+
+/** The `data` object of the ETF held-by response. */
+export interface EtfHeldByData {
+  security: EtfHeldBySecurity;
+  held_by_count: number;
+  /** Sorted by `weight`, highest first. Empty on a page past the end. */
+  funds: EtfHeldByFund[];
+  [key: string]: unknown;
+}
+
+/** Response of the ETF held-by endpoint. Note that `meta` is flat here, not nested under `page`. */
+export interface EtfHeldByResponse {
+  data: EtfHeldByData;
+  meta: {
+    total: number;
+    offset: number;
+    limit: number;
+    [key: string]: unknown;
+  };
+  /** `next` is a relative URL without the token, or null on the last page. */
+  links: { next: string | null; [key: string]: unknown };
+  [key: string]: unknown;
+}
+
+/** One error item in an ETF Holdings JSON error body (HTTP 404). */
+export interface EtfHoldingsErrorItem {
+  status: string;
+  title: string;
+  /** `FUND_NOT_FOUND`, `NOT_COVERED` or `NO_HOLDINGS_YET` on the holdings endpoint. Absent on held-by 404. */
+  code?: string;
+  detail: string;
+  [key: string]: unknown;
+}
+
+/** JSON error body of the ETF Holdings endpoints (HTTP 404). Available as `EODHDError.responseBody`. */
+export interface EtfHoldingsErrorBody {
+  errors: EtfHoldingsErrorItem[];
+}

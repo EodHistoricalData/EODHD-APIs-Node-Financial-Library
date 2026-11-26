@@ -722,6 +722,44 @@ describe("EODHDClient", () => {
     });
   });
 
+  // ── Delegation: ETF Holdings ────────────────────────────────────────────
+
+  describe("ETF Holdings delegation", () => {
+    it("exposes etf as a direct property", () => {
+      const client = createClient();
+      expect(typeof client.etf.holdings).toBe("function");
+      expect(typeof client.etf.heldBy).toBe("function");
+    });
+
+    it("etfHoldings() calls /etf/holdings/{ticker} with no pagination", async () => {
+      const client = createClient();
+      await client.etfHoldings("XLE");
+
+      expect(getCalledPathname(fetch)).toBe("/api/etf/holdings/XLE");
+      const p = getCalledParams(fetch);
+      expect(p.has("page[offset]")).toBe(false);
+      expect(p.has("page[limit]")).toBe(false);
+    });
+
+    it("etfHeldBy() calls /etf/security/{ticker}/held-by with page[offset] and page[limit]", async () => {
+      const client = createClient();
+      await client.etfHeldBy("NVDA", { "page[offset]": 0, "page[limit]": 3 });
+
+      expect(getCalledPathname(fetch)).toBe("/api/etf/security/NVDA/held-by");
+      const p = getCalledParams(fetch);
+      expect(p.get("page[offset]")).toBe("0");
+      expect(p.get("page[limit]")).toBe("3");
+    });
+
+    it("etfHeldBy() encodes a ticker with an exchange suffix and sends no pagination by default", async () => {
+      const client = createClient();
+      await client.etfHeldBy("ASML.AS");
+
+      expect(getCalledPathname(fetch)).toBe("/api/etf/security/ASML.AS/held-by");
+      expect(getCalledParams(fetch).has("page[limit]")).toBe(false);
+    });
+  });
+
   // ── Delegation: Sanctions ───────────────────────────────────────────────
 
   describe("Sanctions delegation", () => {

@@ -5,6 +5,7 @@ import { CorporateApi } from "./api/corporate.js";
 import { CreditRiskApi } from "./api/creditRisk.js";
 // API modules
 import { EodApi } from "./api/eod.js";
+import { EtfApi } from "./api/etf.js";
 import { ExchangesApi } from "./api/exchanges.js";
 import { FundamentalsApi } from "./api/fundamentals.js";
 import { InterestRatesApi } from "./api/interestRates.js";
@@ -40,6 +41,9 @@ import type {
   EconomicEventsResponse,
   EodDataPoint,
   EodParams,
+  EtfHeldByParams,
+  EtfHeldByResponse,
+  EtfHoldingsResponse,
   FundamentalsData,
   FundamentalsParams,
   FundingStressItem,
@@ -242,6 +246,20 @@ export class EODHDClient {
   readonly sanctions: SanctionsApi;
 
   /**
+   * ETF Holdings (beta): positions of a US-listed ETF and the funds that hold a security.
+   * US-listed ETFs only (SEC N-PORT). Cost: 10 API calls per request.
+   *
+   * @example
+   * ```ts
+   * const res = await client.etf.holdings('XLE');
+   * console.log(res.data.General.Name, res.data.Holdings_Count);
+   * ```
+   *
+   * @see https://eodhd.com/financial-apis/etf-holdings-api
+   */
+  readonly etf: EtfApi;
+
+  /**
    * Interest Rates & Spreads: benchmark reference rates, central bank policy rates,
    * and funding-stress spreads.
    *
@@ -335,6 +353,7 @@ export class EODHDClient {
     this.commodities = new CommoditiesApi(this.http);
     this.creditRisk = new CreditRiskApi(this.http);
     this.sanctions = new SanctionsApi(this.http);
+    this.etf = new EtfApi(this.http);
     this.interestRates = new InterestRatesApi(this.http);
     this.realEstate = new RealEstateApi(this.http);
     this._screening = new ScreeningApi(this.http);
@@ -1069,6 +1088,49 @@ export class EODHDClient {
    */
   sanctionsSources(): Promise<SanctionsListResponse<SanctionsSourceItem>> {
     return this.sanctions.sources();
+  }
+
+  // ── ETF Holdings (beta) ──
+
+  /**
+   * Fetch the holdings of a US-listed ETF (beta, US-listed ETFs only, SEC N-PORT).
+   *
+   * Returns all positions in one response (no pagination). Cost: 10 API calls per request.
+   *
+   * @param ticker - US ETF ticker, with or without `.US` (for example `"VTI"`)
+   * @returns Envelope with fund general data, positions, allocation, weights and performance
+   * @throws {@link EODHDError} on API error
+   * @see https://eodhd.com/financial-apis/etf-holdings-api
+   *
+   * @example
+   * ```ts
+   * const res = await client.etfHoldings('XLE');
+   * console.log(res.data.General.Name, res.data.Holdings_Count);
+   * ```
+   */
+  etfHoldings(ticker: Ticker): Promise<EtfHoldingsResponse> {
+    return this.etf.holdings(ticker);
+  }
+
+  /**
+   * Fetch the funds that hold a security (beta, US-listed ETFs only, SEC N-PORT).
+   *
+   * Cost: 10 API calls per request. The demo token is rejected (403).
+   *
+   * @param ticker - The security that is looked up: a US ticker (`"NVDA"`) or a foreign ticker with exchange suffix (`"ASML.AS"`)
+   * @param params - Optional `page[offset]` (default 0) and `page[limit]` (default 100, range 1 to 5000)
+   * @returns Envelope with the security, the fund count, and a page of funds sorted by weight
+   * @throws {@link EODHDError} on API error
+   * @see https://eodhd.com/financial-apis/etf-holdings-api
+   *
+   * @example
+   * ```ts
+   * const res = await client.etfHeldBy('NVDA', { 'page[limit]': 3 });
+   * console.log(res.data.held_by_count, res.data.funds[0].ticker);
+   * ```
+   */
+  etfHeldBy(ticker: Ticker, params?: EtfHeldByParams): Promise<EtfHeldByResponse> {
+    return this.etf.heldBy(ticker, params);
   }
 
   // ── Interest Rates & Spreads ──
